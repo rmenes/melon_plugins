@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="600" viewBox="0 0 1200 600" role="img" aria-label="Melon Plugins logo">
+<style>@import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@600;700&amp;display=swap');
+.w{font-family:'Fredoka',sans-serif;font-weight:700;font-size:168px;letter-spacing:-4px}
+.p{font-family:'Fredoka',sans-serif;font-weight:600;font-size:46px;letter-spacing:18px}</style>
+<rect width="1200" height="600" fill="#1E3A2B"/>
+<g transform="translate(80,160) rotate(-7 200 140) scale(1.6667)">
+<path d="M10,24 A110,110 0 0 0 230,24 Z" fill="#4CB35A"></path>
+<path d="M15,24 A105,105 0 0 0 225,24" fill="none" stroke="#0F2016" stroke-opacity="0.35" stroke-width="5" stroke-dasharray="12 16" stroke-linecap="round"></path>
+<path d="M20,24 A100,100 0 0 0 220,24 Z" fill="#F4FBE9"></path>
+<path d="M28,24 A92,92 0 0 0 212,24 Z" fill="#FF5D73"></path>
+<ellipse cx="80" cy="84" rx="11" ry="6.5" fill="#FFFFFF" fill-opacity="0.45"></ellipse>
+<ellipse cx="160" cy="84" rx="11" ry="6.5" fill="#FFFFFF" fill-opacity="0.45"></ellipse>
+<ellipse cx="97" cy="62" rx="8" ry="11" fill="#0F2016"></ellipse>
+<ellipse cx="143" cy="62" rx="8" ry="11" fill="#0F2016"></ellipse>
+<circle cx="95" cy="57.5" r="3" fill="#FFFFFF"></circle>
+<circle cx="141" cy="57.5" r="3" fill="#FFFFFF"></circle>
+<path d="M107,80 Q120,95 133,80" fill="none" stroke="#0F2016" stroke-width="5" stroke-linecap="round"></path>
+<ellipse cx="58" cy="48" rx="3.5" ry="6" fill="#0F2016" transform="rotate(-50 58 48)"></ellipse>
+<ellipse cx="182" cy="48" rx="3.5" ry="6" fill="#0F2016" transform="rotate(50 182 48)"></ellipse>
+<ellipse cx="78" cy="106" rx="3.5" ry="6" fill="#0F2016" transform="rotate(-25 78 106)"></ellipse>
+<ellipse cx="162" cy="106" rx="3.5" ry="6" fill="#0F2016" transform="rotate(25 162 106)"></ellipse>
+<ellipse cx="120" cy="118" rx="3.5" ry="6" fill="#0F2016"></ellipse>
+<path d="M10,24 A110,110 0 0 0 230,24 Z" fill="none" stroke="#0F2016" stroke-width="6" stroke-linejoin="round"></path>
+</g>
+<text class="w" x="538" y="320" fill="#F4FBE9">melon</text>
+<text class="p" x="548" y="390" fill="#7FD68A">PLUGINS</text>
+</svg>
