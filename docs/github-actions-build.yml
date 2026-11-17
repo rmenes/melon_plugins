@@ -26,7 +26,7 @@ jobs:
             build/plugins/*/*_artefacts/Release/Standalone/
 
   macos:
-    runs-on: macos-14
+    runs-on: macos-15  # Apple Silicon, Xcode 16 (macos-14 was retired by GitHub on 2026-11-02)
     steps:
       - uses: actions/checkout@v4
       - name: Configure
