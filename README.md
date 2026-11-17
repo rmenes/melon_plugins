@@ -1,3 +1,5 @@
+<img width="397" height="96" alt="melon-logo-ondark-header" src="https://github.com/user-attachments/assets/7618c0bc-3326-4c94-aa6f-49344cdb449a" />
+
 # Melon Plugins
 
 A series of **VST3** (Windows/Linux) and **LV2** (Linux) audio plugins built with [JUCE](https://juce.com).
