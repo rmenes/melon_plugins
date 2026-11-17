@@ -1,13 +1,23 @@
 # Builds every Melon plugin on GitHub's machines:
-#   Windows (VST3 + Standalone), macOS (VST3 + AU + Standalone, Intel + Apple Silicon)
+#   Windows (VST3 + Standalone), macOS (VST3 + AU + Standalone, Apple Silicon + Intel)
 #   and Linux (LV2 + VST3 + Standalone).
-# The files end up under Actions > (run) > Artifacts.
+#
+# - Every push: builds and tests everything. The zips are under Actions > (run) > Artifacts.
+# - Publishing a release (Releases > Draft a new release > tag "v1.0.0" > Publish):
+#   builds everything and attaches one ready-to-install zip per platform to the release page.
 name: Build
 
 on:
   push:
+    branches: ['**']     # tags are handled by the release event below
   pull_request:
   workflow_dispatch:
+  release:
+    types: [published]
+
+env:
+  # "v1.0.0" for releases, "dev-<commit>" otherwise
+  MELON_VERSION: ${{ github.event_name == 'release' && github.event.release.tag_name || format('dev-{0}', github.sha) }}
 
 jobs:
   windows:
@@ -18,12 +28,20 @@ jobs:
         run: cmake -B build -A x64 "-DMELON_FORMATS=VST3;Standalone"
       - name: Build
         run: cmake --build build --config Release --parallel
+      - name: Package
+        shell: bash
+        run: |
+          V="${MELON_VERSION:0:16}"
+          D="Melon-Plugins-$V-Windows"
+          mkdir -p "dist/$D/VST3" "dist/$D/Standalone"
+          cp -R build/plugins/*/*_artefacts/Release/VST3/*.vst3 "dist/$D/VST3/"
+          cp build/plugins/*/*_artefacts/Release/Standalone/*.exe "dist/$D/Standalone/"
+          cp docs/install/INSTALL-Windows.txt "dist/$D/INSTALL.txt"
+          cd dist && 7z a -tzip "$D.zip" "$D" > /dev/null
       - uses: actions/upload-artifact@v4
         with:
-          name: Melon-Plugins-Windows-x64
-          path: |
-            build/plugins/*/*_artefacts/Release/VST3/
-            build/plugins/*/*_artefacts/Release/Standalone/
+          name: Melon-Plugins-Windows
+          path: dist/*.zip
 
   macos:
     runs-on: macos-15  # Apple Silicon, Xcode 16 (macos-14 was retired by GitHub on 2026-11-02)
@@ -53,13 +71,21 @@ jobs:
             echo "=== auval $code ==="
             auval -v aufx "$code" Meln | tail -n 3
           done
+      - name: Package
+        # ditto keeps the bundles' symlinks and permissions intact (a plain zip can break them)
+        run: |
+          V="${MELON_VERSION:0:16}"
+          D="Melon-Plugins-$V-macOS"
+          mkdir -p "dist/$D/VST3" "dist/$D/AU" "dist/$D/Standalone"
+          cp -R build/plugins/*/*_artefacts/Release/VST3/*.vst3 "dist/$D/VST3/"
+          cp -R build/plugins/*/*_artefacts/Release/AU/*.component "dist/$D/AU/"
+          cp -R build/plugins/*/*_artefacts/Release/Standalone/*.app "dist/$D/Standalone/"
+          cp docs/install/INSTALL-macOS.txt "dist/$D/INSTALL.txt"
+          cd dist && ditto -c -k --keepParent "$D" "$D.zip"
       - uses: actions/upload-artifact@v4
         with:
-          name: Melon-Plugins-macOS-Universal
-          path: |
-            build/plugins/*/*_artefacts/Release/VST3/
-            build/plugins/*/*_artefacts/Release/AU/
-            build/plugins/*/*_artefacts/Release/Standalone/
+          name: Melon-Plugins-macOS
+          path: dist/*.zip
 
   linux:
     runs-on: ubuntu-22.04
@@ -79,10 +105,45 @@ jobs:
         run: |
           set -e
           for t in build/plugins/*/*_test_*; do if [ -x "$t" ]; then "$t"; fi; done
+      - name: Package
+        run: |
+          V="${MELON_VERSION:0:16}"
+          D="Melon-Plugins-$V-Linux"
+          mkdir -p "dist/$D/LV2" "dist/$D/VST3" "dist/$D/Standalone"
+          cp -R build/plugins/*/*_artefacts/Release/LV2/*.lv2 "dist/$D/LV2/"
+          cp -R build/plugins/*/*_artefacts/Release/VST3/*.vst3 "dist/$D/VST3/"
+          for f in build/plugins/*/*_artefacts/Release/Standalone/*; do
+            if [ -f "$f" ] && [ -x "$f" ]; then cp "$f" "dist/$D/Standalone/"; fi
+          done
+          cp docs/install/INSTALL-Linux.txt "dist/$D/INSTALL.txt"
+          cd dist && zip -qry "$D.zip" "$D"
       - uses: actions/upload-artifact@v4
         with:
-          name: Melon-Plugins-Linux-x64
-          path: |
-            build/plugins/*/*_artefacts/Release/LV2/
-            build/plugins/*/*_artefacts/Release/VST3/
-            build/plugins/*/*_artefacts/Release/Standalone/
+          name: Melon-Plugins-Linux
+          path: dist/*.zip
+
+  # Only when a release is published: attach the three zips to the release page
+  release:
+    if: github.event_name == 'release'
+    needs: [windows, macos, linux]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          path: dist
+          merge-multiple: true
+      - name: Attach the zips to the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.event.release.tag_name }}
+          BODY: ${{ github.event.release.body }}
+        run: |
+          ls -la dist
+          gh release upload "$TAG" dist/*.zip --clobber --repo "$GITHUB_REPOSITORY"
+          # If the release has no description, fill it with the plugin list and install steps
+          if [ -z "$(echo "$BODY" | tr -d '[:space:]')" ]; then
+            gh release edit "$TAG" --notes-file docs/install/RELEASE_NOTES.md --repo "$GITHUB_REPOSITORY"
+          fi

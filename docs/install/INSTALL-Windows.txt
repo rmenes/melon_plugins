@@ -1,0 +1,21 @@
+MELON PLUGINS - Windows (64-bit)
+================================
+
+Installing the VST3 plugins
+---------------------------
+1. Copy every folder inside "VST3" (Melon Dirt.vst3, Melon Muffs.vst3, ...) to:
+
+       C:\Program Files\Common Files\VST3\
+
+   Windows will ask for administrator permission.
+2. Open your DAW and rescan plugins. They appear under the manufacturer "Melon".
+
+Standalone apps
+---------------
+The "Standalone" folder has each plugin as a separate program. Run it directly
+(no installation needed). Choose your audio interface in its Options menu.
+
+Plugins in this package
+-----------------------
+Melon GraphicEQ, Melon Chorus, Melon Flanger, Melon Guitar Synth, Melon Dirt,
+Melon Muffs, Melon Gates of Doom, Melon Reverberare, Melon Delay 2290

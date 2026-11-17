@@ -1,0 +1,32 @@
+MELON PLUGINS - macOS (Apple Silicon and Intel, macOS 10.13 or newer)
+=====================================================================
+
+Installing the plugins
+----------------------
+1. In Finder, press Cmd+Shift+G and go to:  ~/Library/Audio/Plug-Ins/
+2. Copy the folders inside "VST3" (Melon Dirt.vst3, ...) into the "VST3" folder there.
+3. Copy the folders inside "AU" (Melon Dirt.component, ...) into the "Components" folder there.
+   (Logic Pro and GarageBand use the AU versions; most other DAWs use VST3.)
+
+Allowing the plugins to run (important)
+---------------------------------------
+These plugins are not signed with an Apple Developer ID, so macOS may block them
+("cannot be opened" / "is damaged"). To allow them, open Terminal and run once:
+
+    xattr -cr ~/Library/Audio/Plug-Ins/VST3/Melon*.vst3 ~/Library/Audio/Plug-Ins/Components/Melon*.component
+
+For the standalone apps, run the same command on the app, for example:
+
+    xattr -cr "/Applications/Melon Dirt.app"
+
+Then open your DAW and rescan plugins. They appear under the manufacturer "Melon".
+
+Standalone apps
+---------------
+The "Standalone" folder has each plugin as a separate app. Copy them to Applications
+if you like (and run the xattr command above on them).
+
+Plugins in this package
+-----------------------
+Melon GraphicEQ, Melon Chorus, Melon Flanger, Melon Guitar Synth, Melon Dirt,
+Melon Muffs, Melon Gates of Doom, Melon Reverberare, Melon Delay 2290

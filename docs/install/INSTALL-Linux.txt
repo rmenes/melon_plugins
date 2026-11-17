@@ -1,0 +1,26 @@
+MELON PLUGINS - Linux (x86_64)
+==============================
+
+Installing the plugins
+----------------------
+1. Copy the folders inside "LV2" (Melon Dirt.lv2, ...) to:   ~/.lv2/
+2. Copy the folders inside "VST3" (Melon Dirt.vst3, ...) to: ~/.vst3/
+
+   For example, from this folder:
+
+       mkdir -p ~/.lv2 ~/.vst3
+       cp -r LV2/*.lv2 ~/.lv2/
+       cp -r VST3/*.vst3 ~/.vst3/
+
+3. Open your DAW (Ardour, Reaper, Bitwig, Carla, ...) and rescan plugins.
+   They appear under the manufacturer "Melon".
+
+Standalone apps
+---------------
+The "Standalone" folder has each plugin as a separate program (uses JACK or ALSA).
+If it doesn't start, make it executable first:  chmod +x Standalone/*
+
+Plugins in this package
+-----------------------
+Melon GraphicEQ, Melon Chorus, Melon Flanger, Melon Guitar Synth, Melon Dirt,
+Melon Muffs, Melon Gates of Doom, Melon Reverberare, Melon Delay 2290

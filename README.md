@@ -42,7 +42,8 @@ melon_plugins/
 ├── docs/
 │   ├── NEW_PLUGIN.md         ← step-by-step guide to creating a new plugin
 │   ├── PLUGIN_REGISTRY.md    ← codes and URIs already in use
-│   └── github-actions-build.yml ← build workflow (copy to .github/workflows/build.yml)
+│   ├── install/              ← install instructions and release notes put in the release zips
+│   └── github-actions-build.yml ← copy of .github/workflows/build.yml
 └── builds/                   ← compiled plugins, ready to install
     ├── windows/
     └── linux/
@@ -100,9 +101,11 @@ cmake --build build -j$(nproc)
 
 To install, copy the `.lv2` folders to `~/.lv2/` and the `.vst3` folders to `~/.vst3/`.
 
-## Automatic builds (GitHub Actions) — Windows, macOS and Linux
+## Downloads and automatic builds (GitHub Actions)
 
-The workflow is `docs/github-actions-build.yml`. GitHub only runs it from `.github/workflows/build.yml`, so copy it there once (PowerShell, in `E:\melon_plugins`: `mkdir .github\workflows; copy docs\github-actions-build.yml .github\workflows\build.yml`). Once this folder is a GitHub repository, every *push* builds the whole series on GitHub's machines and runs the tests:
+**Ready-to-install plugins are on the [Releases page](https://github.com/rmenes/melon_plugins/releases):** one zip per system (Windows, macOS, Linux), each with an `INSTALL.txt`.
+
+The build is defined in `.github/workflows/build.yml` (copy in `docs/github-actions-build.yml`). It builds the whole series on GitHub's machines and runs the tests:
 
 | Job | Formats | Notes |
 |---|---|---|
@@ -110,9 +113,16 @@ The workflow is `docs/github-actions-build.yml`. GitHub only runs it from `.gith
 | macOS | VST3, AU, Standalone | Universal (Apple Silicon + Intel), macOS 10.13 or newer; AUs are checked with `auval` |
 | Linux | LV2, VST3, Standalone | x64 |
 
-The finished files appear under **Actions → latest run → Artifacts** (one zip per platform). You can also start a build by hand: **Actions → Build → Run workflow**.
+### Publishing a new release
 
-`builds/` is in `.gitignore`: the compiled plugins come from the Actions artifacts, so they don't need to be in the repository.
+1. On GitHub, open **Releases → Draft a new release**.
+2. Under **Choose a tag**, type a new version (for example `v1.1.0`) and pick **Create new tag on publish**.
+3. Give it a title (for example `Melon Plugins 1.1.0`). Leave the description empty to get the standard plugin list and install notes, or write your own.
+4. Click **Publish release**.
+
+GitHub then builds all three systems (about 40 minutes) and attaches `Melon-Plugins-v1.1.0-Windows.zip`, `-macOS.zip` and `-Linux.zip` to the release.
+
+Every ordinary push is also built and tested; those zips are under **Actions → (run) → Artifacts** (kept for 90 days). `builds/` is in `.gitignore`: compiled plugins come from GitHub, so they don't need to be in the repository.
 
 ### Installing on a Mac
 
