@@ -29,3 +29,4 @@ xattr -cr ~/Library/Audio/Plug-Ins/VST3/Melon*.vst3 ~/Library/Audio/Plug-Ins/Com
 | **Melon Gates of Doom** | Gate / expander / ducker with lookahead |
 | **Melon Reverberare** | Multi-machine reverb (12 machines, Infinite) |
 | **Melon Delay 2290** | Digital delay with tap, sync, modulation and dynamic delay |
+| **Melon Rack** | Neural amp model loader (NAM / AIDA-X) with gate, EQ and stereo IR cabinet |

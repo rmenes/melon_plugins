@@ -18,6 +18,7 @@ All plugins share the same identity (manufacturer **Melon**) and the same build 
 | **Melon Gates of Doom** | Pro-G-style gate / expander / ducker with lookahead and side-chain filters | `plugins/GatesOfDoom` | v1.0.0 |
 | **Melon Reverberare** | BigSky-style multi-machine reverb (12 machines, Infinite) | `plugins/Reverberare` | v1.0.0 |
 | **Melon Delay 2290** | TC 2290-style digital delay (tap, sync, modulation, dynamic delay) | `plugins/Delay2290` | v1.0.0 |
+| **Melon Rack** | Neural amp model loader (NAM / AIDA-X) with gate, EQ and stereo IR cabinet, after NeuralRack | `plugins/Rack` | v1.0.0 |
 
 The full list of plugin codes and identifiers is in [`docs/PLUGIN_REGISTRY.md`](docs/PLUGIN_REGISTRY.md).
 
@@ -37,7 +38,8 @@ melon_plugins/
 │   ├── Muffs/
 │   ├── GatesOfDoom/
 │   ├── Reverberare/
-│   └── Delay2290/
+│   ├── Delay2290/
+│   └── Rack/
 ├── shared/                   ← code shared by the newer plugins (DSP blocks, base classes, test helpers)
 ├── docs/
 │   ├── NEW_PLUGIN.md         ← step-by-step guide to creating a new plugin
@@ -142,6 +144,8 @@ To distribute them to other people without that step, they need to be signed and
 | `MELON_FORMATS` | `VST3;LV2;Standalone` | Formats to build. |
 | `MELON_VST3_MANIFEST` | `ON` | Generates the VST3 `moduleinfo.json`. Turn it off when cross-compiling. |
 | `JUCE_DIR` | empty | Uses a local copy of JUCE instead of downloading it. |
+| `NEURALAUDIO_DIR` | empty | Melon Rack only: uses a local clone of [NeuralAudio](https://github.com/mikeoliphant/NeuralAudio) (cloned with `--recurse-submodules`) instead of downloading it. |
+| `NEURALAUDIO_TAG` | `main` | Melon Rack only: NeuralAudio branch, tag or commit to download. |
 
 Example: `cmake -B build -A x64 "-DMELON_FORMATS=VST3"`
 

@@ -1,0 +1,70 @@
+cmake_minimum_required(VERSION 3.22)
+
+project(MelonRack VERSION 1.0.0 LANGUAGES C CXX)
+
+include(${CMAKE_CURRENT_LIST_DIR}/../../cmake/MelonCommon.cmake)
+
+# --- NeuralAudio (NAM / AIDA-X / RTNeural model engine, MIT licence) ----------------
+# Downloaded once, like JUCE. Set NEURALAUDIO_DIR to use a local clone instead
+# (git clone --recurse-submodules https://github.com/mikeoliphant/NeuralAudio).
+set(NEURALAUDIO_DIR "" CACHE PATH "Local copy of NeuralAudio (optional). Empty = download from GitHub")
+set(NEURALAUDIO_TAG "main" CACHE STRING "NeuralAudio branch, tag or commit to download")
+
+if(NOT TARGET NeuralAudio)
+    # Only the library: no test utilities, no NAM Core / static RTNeural variants
+    set(BUILD_UTILS OFF CACHE BOOL "" FORCE)
+    set(BUILD_NAMCORE OFF CACHE BOOL "" FORCE)
+    set(BUILD_STATIC_RTNEURAL OFF CACHE BOOL "" FORCE)
+
+    if(NEURALAUDIO_DIR)
+        add_subdirectory(${NEURALAUDIO_DIR} ${CMAKE_BINARY_DIR}/NeuralAudio EXCLUDE_FROM_ALL)
+        set(MELON_NEURALAUDIO_SRC ${NEURALAUDIO_DIR})
+    else()
+        include(FetchContent)
+        FetchContent_Declare(NeuralAudio
+            GIT_REPOSITORY https://github.com/mikeoliphant/NeuralAudio.git
+            GIT_TAG        ${NEURALAUDIO_TAG}
+            GIT_SHALLOW    TRUE
+            GIT_SUBMODULES_RECURSE TRUE)
+        FetchContent_MakeAvailable(NeuralAudio)
+        set(MELON_NEURALAUDIO_SRC ${neuralaudio_SOURCE_DIR})
+    endif()
+    set_target_properties(NeuralAudio PROPERTIES POSITION_INDEPENDENT_CODE TRUE)
+endif()
+
+# --- the plugin ---------------------------------------------------------------------------
+juce_add_plugin(Rack
+    COMPANY_NAME              "${MELON_COMPANY_NAME}"
+    PLUGIN_MANUFACTURER_CODE  ${MELON_MANUFACTURER_CODE}
+    PRODUCT_NAME              "Melon Rack"
+    ICON_BIG                  "${MELON_BRANDING_DIR}/png/melon-icon-512.png"
+    ICON_SMALL                "${MELON_BRANDING_DIR}/png/melon-icon-128.png"
+    PLUGIN_CODE               Rck1
+    FORMATS                   ${MELON_FORMATS}
+    IS_SYNTH                  FALSE
+    NEEDS_MIDI_INPUT          FALSE
+    NEEDS_MIDI_OUTPUT         FALSE
+    IS_MIDI_EFFECT            FALSE
+    EDITOR_WANTS_KEYBOARD_FOCUS FALSE
+    COPY_PLUGIN_AFTER_BUILD   FALSE
+    VST3_CATEGORIES           Fx Distortion
+    VST3_AUTO_MANIFEST        ${MELON_VST3_MANIFEST}
+    LV2URI                    "${MELON_LV2_URI_BASE}/melon-rack")
+
+target_sources(Rack PRIVATE
+    Source/PluginProcessor.cpp
+    Source/PluginEditor.cpp
+    Source/NeuralModelSlot.cpp)
+
+target_include_directories(Rack PRIVATE Source ${MELON_NEURALAUDIO_SRC})
+
+melon_configure_plugin(Rack)
+
+target_link_libraries(Rack PRIVATE NeuralAudio juce::juce_dsp)
+
+# NeuralAudio is a C++20 library
+target_compile_features(Rack PRIVATE cxx_std_20)
+
+# DSP test (independent of JUCE and of the neural engine)
+add_executable(Rack_test_dsp tests/test_dsp.cpp)
+target_include_directories(Rack_test_dsp PRIVATE Source ${MELON_SHARED_DIR})
