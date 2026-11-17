@@ -8,13 +8,14 @@ include(${CMAKE_CURRENT_LIST_DIR}/../../cmake/MelonCommon.cmake)
 # Downloaded once, like JUCE. Set NEURALAUDIO_DIR to use a local clone instead
 # (git clone --recurse-submodules https://github.com/mikeoliphant/NeuralAudio).
 set(NEURALAUDIO_DIR "" CACHE PATH "Local copy of NeuralAudio (optional). Empty = download from GitHub")
-set(NEURALAUDIO_TAG "main" CACHE STRING "NeuralAudio branch, tag or commit to download")
+# Pinned to a known-good commit; change it to update the engine (the API changes between versions)
+set(NEURALAUDIO_TAG "29b90ac311abf0ec507abb3f16a90ffda151d592" CACHE STRING "NeuralAudio commit, tag or branch to download")
 
 if(NOT TARGET NeuralAudio)
-    # Only the library: no test utilities, no NAM Core / static RTNeural variants
+    # Only the library, not NeuralAudio's test utilities. NAM Core stays on: NeuralAudio
+    # falls back to it for NAM architectures its own engine doesn't cover (e.g. custom A2 models).
     set(BUILD_UTILS OFF CACHE BOOL "" FORCE)
-    set(BUILD_NAMCORE OFF CACHE BOOL "" FORCE)
-    set(BUILD_STATIC_RTNEURAL OFF CACHE BOOL "" FORCE)
+    set(BUILD_NAMCORE ON CACHE BOOL "" FORCE)
 
     if(NEURALAUDIO_DIR)
         add_subdirectory(${NEURALAUDIO_DIR} ${CMAKE_BINARY_DIR}/NeuralAudio EXCLUDE_FROM_ALL)
@@ -24,7 +25,6 @@ if(NOT TARGET NeuralAudio)
         FetchContent_Declare(NeuralAudio
             GIT_REPOSITORY https://github.com/mikeoliphant/NeuralAudio.git
             GIT_TAG        ${NEURALAUDIO_TAG}
-            GIT_SHALLOW    TRUE
             GIT_SUBMODULES_RECURSE TRUE)
         FetchContent_MakeAvailable(NeuralAudio)
         set(MELON_NEURALAUDIO_SRC ${neuralaudio_SOURCE_DIR})

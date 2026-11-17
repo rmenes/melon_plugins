@@ -1,5 +1,5 @@
 // NeuralModelSlot.cpp - the only file that talks to the NeuralAudio engine.
-// If a future NeuralAudio version changes its API, this is the file to adapt.
+// Written for NeuralAudio commit 29b90ac (Nov 2026). If its API changes, this is the file to adapt.
 #include "NeuralModelSlot.h"
 
 #include <NeuralAudio/NeuralModel.h>
@@ -11,18 +11,15 @@ namespace rack
 {
 namespace
 {
-// NeuralModel::CreateFromFile takes a std::filesystem::path in some versions and a std::string
-// in others. A path built with u8path keeps non-ASCII folder names working on Windows.
-template <class P>
-auto createModel (const P& path, int) -> decltype (NeuralAudio::NeuralModel::CreateFromFile (path))
+// One loader for the whole plugin: it only holds settings (load modes, buffer size).
+NeuralAudio::NeuralModelLoader& modelLoader()
 {
-    return NeuralAudio::NeuralModel::CreateFromFile (path);
-}
-
-template <class P>
-auto createModel (const P& path, long) -> decltype (NeuralAudio::NeuralModel::CreateFromFile (path.string()))
-{
-    return NeuralAudio::NeuralModel::CreateFromFile (path.string());
+    static NeuralAudio::NeuralModelLoader loader = [] {
+        NeuralAudio::NeuralModelLoader l;
+        l.SetDefaultMaxAudioBufferSize (LoadedModel::kModelChunk);
+        return l;
+    }();
+    return loader;
 }
 } // namespace
 
@@ -41,7 +38,7 @@ std::unique_ptr<LoadedModel> LoadedModel::load (const std::string& utf8Path, dou
 #else
         const auto path = std::filesystem::u8path (utf8Path);
 #endif
-        m->model = createModel (path, 0);
+        m->model = modelLoader().CreateFromFile (path);
     }
     catch (const std::exception& e)
     {
@@ -60,7 +57,9 @@ std::unique_ptr<LoadedModel> LoadedModel::load (const std::string& utf8Path, dou
         return nullptr;
     }
 
-    m->modelRate = rate > 1000.0 ? rate : 48000.0;
+    // The engine reads the rate from the file (48 kHz when the file has none)
+    const double reported = (double) m->model->GetSampleRate();
+    m->modelRate = reported > 1000.0 ? reported : (rate > 1000.0 ? rate : 48000.0);
     m->normDb    = (float) m->model->GetRecommendedOutputDBAdjustment();
     return m;
 }
@@ -72,13 +71,13 @@ void LoadedModel::prepare (double hostRate, int maxBlock)
     // Warm the model up with silence so the first real block does not click
     float silence[kModelChunk] = {}, out[kModelChunk];
     for (int i = 0; i < 8; ++i)
-        model->Process (silence, out, kModelChunk);
+        model->Process (silence, out, (size_t) kModelChunk);
 }
 
 void LoadedModel::process (float* io, int numSamples)
 {
     resampler.process (io, numSamples, [this] (const float* in, float* out, int n) {
-        model->Process (const_cast<float*> (in), out, n);
+        model->Process (in, out, (size_t) n);
     });
 }
 

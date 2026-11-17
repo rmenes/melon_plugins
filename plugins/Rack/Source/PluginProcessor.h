@@ -72,7 +72,6 @@ private:
     void runModel (int slot, bool on, float inDb, float outDb, bool normalize, float* x, int n);
     void updateLatency();
     void handleAsyncUpdate() override { updateLatency(); }
-    static double readModelSampleRate (const juce::File& file);
 
     ModelSlot slots[kNumModels];
 

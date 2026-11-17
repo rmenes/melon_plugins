@@ -294,22 +294,6 @@ void RackProcessor::processChunk (float* const* data, int numChannels, int offse
 }
 
 //==============================================================================
-double RackProcessor::readModelSampleRate (const juce::File& file)
-{
-    const auto json = juce::JSON::parse (file);
-    auto find = [] (const juce::var& v) -> double {
-        for (auto key : { "sample_rate", "samplerate", "sampleRate" })
-            if (v.hasProperty (key) && (double) v[key] > 1000.0)
-                return (double) v[key];
-        return 0.0;
-    };
-    if (const double r = find (json); r > 0.0)
-        return r;
-    if (const double r = find (json["metadata"]); r > 0.0)
-        return r;
-    return 48000.0; // NAM's standard rate, and what AIDA-X models without metadata expect
-}
-
 void RackProcessor::loadModel (int s, const juce::File& file)
 {
     auto& slot = slots[s];
@@ -336,9 +320,8 @@ void RackProcessor::loadModel (int s, const juce::File& file)
         }
         else
         {
-            const double rate = readModelSampleRate (file);
-            std::string  error;
-            model = rack::LoadedModel::load (file.getFullPathName().toStdString(), rate, error);
+            std::string error;
+            model = rack::LoadedModel::load (file.getFullPathName().toStdString(), 48000.0, error);
             if (model == nullptr)
             {
                 info   = "Could not load: " + juce::String (error);
@@ -349,7 +332,7 @@ void RackProcessor::loadModel (int s, const juce::File& file)
                 preparedRate  = currentRate.load();
                 preparedBlock = currentBlock.load();
                 model->prepare (preparedRate, preparedBlock);
-                info = file.getFileExtension().substring (1).toUpperCase() + " model, trained at " + rateText (rate);
+                info = file.getFileExtension().substring (1).toUpperCase() + " model, trained at " + rateText (model->modelSampleRate());
             }
         }
 

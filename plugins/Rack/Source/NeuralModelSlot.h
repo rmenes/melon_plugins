@@ -21,10 +21,10 @@ class LoadedModel
 public:
     ~LoadedModel();
 
-    // Loads a model file. `modelRate` = the rate the model was trained at (read from the file's
-    // metadata by the caller; 48000 when unknown). Returns nullptr and fills `error` on failure.
+    // Loads a model file. `fallbackRate` is used only if the engine does not report the rate
+    // the model was trained at. Returns nullptr and fills `error` on failure.
     // Not real-time safe: call it from a background thread.
-    static std::unique_ptr<LoadedModel> load (const std::string& utf8Path, double modelRate, std::string& error);
+    static std::unique_ptr<LoadedModel> load (const std::string& utf8Path, double fallbackRate, std::string& error);
 
     // Not real-time safe (allocates). Must be called before process().
     void prepare (double hostRate, int maxBlock);
