@@ -116,7 +116,7 @@ The build is defined in `.github/workflows/build.yml` (copy in `docs/github-acti
 | Job | Formats | Notes |
 |---|---|---|
 | Windows | VST3, Standalone | x64 |
-| macOS | VST3, AU, Standalone | Universal (Apple Silicon + Intel), macOS 10.13 or newer; AUs are checked with `auval` |
+| macOS | VST3, AU, Standalone | Universal (Apple Silicon + Intel), macOS 10.15 or newer; AUs are checked with `auval` |
 | Linux | LV2, VST3, Standalone | x64 |
 
 ### Publishing a new release

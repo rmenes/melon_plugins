@@ -1,4 +1,4 @@
-MELON PLUGINS - macOS (Apple Silicon and Intel, macOS 10.13 or newer)
+MELON PLUGINS - macOS (Apple Silicon and Intel, macOS 10.15 or newer)
 =====================================================================
 
 Installing the plugins
