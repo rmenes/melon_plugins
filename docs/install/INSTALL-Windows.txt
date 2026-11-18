@@ -18,4 +18,4 @@ The "Standalone" folder has each plugin as a separate program. Run it directly
 Plugins in this package
 -----------------------
 Melon GraphicEQ, Melon Chorus, Melon Flanger, Melon Guitar Synth, Melon Dirt,
-Melon Muffs, Melon Gates of Doom, Melon Reverberare, Melon Delay 2290, Melon Rack
+Melon Muffs, Melon Gates of Doom, Melon Reverberare, Melon Delay 2290, Melon Rack, Melon Comp

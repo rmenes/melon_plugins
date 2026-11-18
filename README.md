@@ -19,6 +19,7 @@ All plugins share the same identity (manufacturer **Melon**) and the same build 
 | **Melon Reverberare** | BigSky-style multi-machine reverb (12 machines, Infinite) | `plugins/Reverberare` | v1.0.0 |
 | **Melon Delay 2290** | TC 2290-style digital delay (tap, sync, modulation, dynamic delay) | `plugins/Delay2290` | v1.0.0 |
 | **Melon Rack** | Neural amp model loader (NAM / AIDA-X) with gate, EQ and stereo IR cabinet, after NeuralRack | `plugins/Rack` | v1.0.0 |
+| **Melon Comp** | Keeley Compressor Plus-style guitar compressor (Sustain, Level, Blend, Tone, Single Coil/Humbucker release) | `plugins/Comp` | v1.0.0 |
 
 The full list of plugin codes and identifiers is in [`docs/PLUGIN_REGISTRY.md`](docs/PLUGIN_REGISTRY.md).
 
@@ -39,7 +40,8 @@ melon_plugins/
 │   ├── GatesOfDoom/
 │   ├── Reverberare/
 │   ├── Delay2290/
-│   └── Rack/
+│   ├── Rack/
+│   └── Comp/
 ├── shared/                   ← code shared by the newer plugins (DSP blocks, base classes, test helpers)
 ├── docs/
 │   ├── NEW_PLUGIN.md         ← step-by-step guide to creating a new plugin

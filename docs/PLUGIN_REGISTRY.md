@@ -24,6 +24,7 @@ Every plugin needs **unique, permanent** identifiers. DAWs use them to recognise
 | Melon Reverberare | `Reverberare` | `Rvb1` | `https://github.com/melon-audio/melon-reverberare` | 1.0.0 |
 | Melon Delay 2290 | `Delay2290` | `D290` | `https://github.com/melon-audio/melon-delay2290` | 1.0.0 |
 | Melon Rack | `Rack` | `Rck1` | `https://github.com/melon-audio/melon-rack` | 1.0.0 |
+| Melon Comp | `Comp` | `Cmp1` | `https://github.com/melon-audio/melon-comp` | 1.0.0 |
 
 ## Rules
 

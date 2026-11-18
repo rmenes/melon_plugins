@@ -23,4 +23,4 @@ If it doesn't start, make it executable first:  chmod +x Standalone/*
 Plugins in this package
 -----------------------
 Melon GraphicEQ, Melon Chorus, Melon Flanger, Melon Guitar Synth, Melon Dirt,
-Melon Muffs, Melon Gates of Doom, Melon Reverberare, Melon Delay 2290, Melon Rack
+Melon Muffs, Melon Gates of Doom, Melon Reverberare, Melon Delay 2290, Melon Rack, Melon Comp
