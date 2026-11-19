@@ -25,7 +25,9 @@ if(NOT TARGET NeuralAudio)
         FetchContent_Declare(NeuralAudio
             GIT_REPOSITORY https://github.com/mikeoliphant/NeuralAudio.git
             GIT_TAG        ${NEURALAUDIO_TAG}
-            GIT_SUBMODULES_RECURSE TRUE)
+            GIT_SUBMODULES_RECURSE TRUE
+            # Newer CMake (e.g. GitHub's Windows image from 2026-11) rejects some source_group() lines in NeuralAudio
+            PATCH_COMMAND ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_LIST_DIR}/../../cmake/patches/neuralaudio-remove-source-group.cmake)
         FetchContent_MakeAvailable(NeuralAudio)
         set(MELON_NEURALAUDIO_SRC ${neuralaudio_SOURCE_DIR})
     endif()
