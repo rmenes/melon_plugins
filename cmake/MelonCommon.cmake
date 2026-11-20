@@ -14,10 +14,11 @@ set(MELON_VERSION           "1.1.0")
 # TONE3000 publishable key (client_id) used by Melon Rack to sign in and download tones.
 # Create it at https://www.tone3000.com/settings (API keys). It is meant to be public
 # (it ships inside the plugin), so it can be written here. Never put the SECRET key here.
+# One key for the app: every user still signs in with their own TONE3000 account.
 # Empty = Melon Rack only opens the suggested tones in the browser.
 # Can also be passed on the command line: -DMELON_TONE3000_CLIENT_ID=...
 if(NOT DEFINED MELON_TONE3000_CLIENT_ID)
-    set(MELON_TONE3000_CLIENT_ID "")
+    set(MELON_TONE3000_CLIENT_ID "t3k_pub_UBVTD9VHp8JRasys1BgLrcgAtE_rkkKU")
 endif()
 set(MELON_COMPANY_NAME      "Melon")
 set(MELON_MANUFACTURER_CODE "Meln")
