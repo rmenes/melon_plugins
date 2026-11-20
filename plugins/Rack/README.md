@@ -49,6 +49,25 @@ The paths of the loaded models and IRs are saved with the DAW project (and with 
 
 Models load in the background, so the audio never stops while a big model is being read.
 
+## TONE3000
+
+The row under the rack connects Melon Rack to [TONE3000](https://www.tone3000.com), the community library of NAM captures and IRs.
+
+- **Suggested tones.** Each factory preset (except Default) suggests a pedal, amp and/or cabinet IR from TONE3000. Click a suggestion to open it on tone3000.com, load its suggested capture, or choose another capture of the same tone.
+- **Load suggested tones** downloads all of the preset's suggestions and loads them. Slots without a suggestion are emptied, so the rack matches the preset. Then use **Save As** to keep the result as a user preset: user presets remember the files.
+- **Sign in** uses your own (free) TONE3000 account. Melon Rack shows a short code and opens tone3000.com/activate; you confirm there, so your password never passes through the plugin. The session is kept in `<app data>/Melon Plugins/tone3000-session.json`; **Sign out** (click your name) deletes it.
+- **Downloads** happen only when you click, into `Documents/Melon Plugins/TONE3000/<tone>/`. A file that is already there is not downloaded again.
+- No TONE3000 files are shipped with Melon Rack: most tones are under the T3K licence, which does not allow redistributing them, and the TONE3000 API terms only allow downloads requested by the user.
+
+### Setting it up (for builds of the plugin)
+
+1. Create an API key pair at https://www.tone3000.com/settings and copy the **publishable key** (the `client_id`). Never use the secret key in the plugin.
+2. Put it in `cmake/MelonCommon.cmake` (`MELON_TONE3000_CLIENT_ID`) or pass `-DMELON_TONE3000_CLIENT_ID=...` to CMake. Without a key, Melon Rack still shows the suggestions and opens them in the browser, but cannot sign in or download.
+3. Optional: download the official logo pack (https://www.tone3000.com/TONE3000%20Logos.zip) and save the full logo as `branding/tone3000/tone3000-logo.png`; the build then shows it instead of the text mark.
+4. Before a public release, check the integration against TONE3000's API terms and design requirements (https://www.tone3000.com/api/terms, https://www.tone3000.com/api). Independent developers can use the API for free when they follow the design requirements and cross-promote TONE3000 (logo and link on the website or release page).
+
+The suggested tones are listed in `Source/ToneSuggestions.h` (TONE3000 tone ID, title, creator, address).
+
 ## Sample rates and latency
 
 Neural models are trained at one sample rate (almost always 48 kHz). If the DAW runs at another rate, Melon Rack converts the signal to the model's rate and back for that model (the slot shows *resampled*). This adds a small, constant latency that is reported to the DAW so it can compensate:
@@ -96,5 +115,6 @@ cmake -B build -DNEURALAUDIO_DIR=/path/to/NeuralAudio
 - **Neural Amp Modeler** by Steven Atkinson — the NAM model format and reference implementation. MIT. https://github.com/sdatkinson/NeuralAmpModelerCore
 - **RTNeural** by Jatin Chowdhury — engine for AIDA-X / Keras models. BSD 3-Clause. https://github.com/jatinchowdhury18/RTNeural
 - **Eigen** — linear algebra used by the engines. MPL 2.0.
+- **TONE3000** — library of NAM captures and IRs, reached through its API. The suggested tones belong to their creators (credited in the plugin and in `Source/ToneSuggestions.h`). https://www.tone3000.com
 
 The full licence texts are in [`THIRD_PARTY.md`](THIRD_PARTY.md).

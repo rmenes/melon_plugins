@@ -50,6 +50,7 @@ juce_add_plugin(Rack
     IS_MIDI_EFFECT            FALSE
     EDITOR_WANTS_KEYBOARD_FOCUS FALSE
     COPY_PLUGIN_AFTER_BUILD   FALSE
+    NEEDS_CURL                TRUE      # TONE3000 downloads (HTTPS) on Linux
     VST3_CATEGORIES           Fx Distortion
     VST3_AUTO_MANIFEST        ${MELON_VST3_MANIFEST}
     LV2URI                    "${MELON_LV2_URI_BASE}/melon-rack")
@@ -57,11 +58,29 @@ juce_add_plugin(Rack
 target_sources(Rack PRIVATE
     Source/PluginProcessor.cpp
     Source/PluginEditor.cpp
-    Source/NeuralModelSlot.cpp)
+    Source/NeuralModelSlot.cpp
+    Source/Tone3000.cpp
+    Source/ToneStrip.cpp)
 
 target_include_directories(Rack PRIVATE Source ${MELON_NEURALAUDIO_SRC})
 
-melon_configure_plugin(Rack)
+melon_configure_plugin(Rack NETWORK)
+
+# TONE3000 integration: the publishable key (cmake/MelonCommon.cmake) and, if present,
+# the official logo (branding/tone3000/tone3000-logo.png, from the TONE3000 logo pack).
+target_compile_definitions(Rack PRIVATE "MELON_TONE3000_CLIENT_ID=\"${MELON_TONE3000_CLIENT_ID}\"")
+set(MELON_T3K_LOGO ${MELON_BRANDING_DIR}/tone3000/tone3000-logo.png)
+if(EXISTS ${MELON_T3K_LOGO})
+    if(NOT TARGET Tone3000Logo)
+        juce_add_binary_data(Tone3000Logo
+            HEADER_NAME Tone3000Logo.h
+            NAMESPACE   Tone3000Logo
+            SOURCES     ${MELON_T3K_LOGO})
+        set_target_properties(Tone3000Logo PROPERTIES POSITION_INDEPENDENT_CODE TRUE)
+    endif()
+    target_link_libraries(Rack PRIVATE Tone3000Logo)
+    target_compile_definitions(Rack PRIVATE MELON_HAS_T3K_LOGO=1)
+endif()
 
 target_link_libraries(Rack PRIVATE NeuralAudio juce::juce_dsp)
 

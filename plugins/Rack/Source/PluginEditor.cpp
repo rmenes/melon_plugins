@@ -395,8 +395,8 @@ void RackView::resized()
 }
 
 //==============================================================================
-RackEditor::RackEditor (RackProcessor& p) : EditorBase (p, "Rack"), rackView (p)
+RackEditor::RackEditor (RackProcessor& p) : EditorBase (p, "Rack"), body (p)
 {
-    setDisplay (rackView);
-    finishSetup (960, 720, 880, 660);
+    setDisplay (body);
+    finishSetup (960, 782, 880, 722); // + the TONE3000 row
 }

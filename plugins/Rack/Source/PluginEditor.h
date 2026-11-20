@@ -2,6 +2,7 @@
 
 #include <MelonEditorBase.h>
 #include "PluginProcessor.h"
+#include "ToneStrip.h"
 
 //==============================================================================
 // Knob with its name above, in the series' style (sized by the rack units).
@@ -111,12 +112,39 @@ private:
 };
 
 //==============================================================================
+// The rack with the TONE3000 row under it
+class RackBody : public juce::Component
+{
+public:
+    explicit RackBody (RackProcessor& p) : rackView (p), toneStrip (p)
+    {
+        addAndMakeVisible (rackView);
+        addAndMakeVisible (toneStrip);
+    }
+
+    void resized() override
+    {
+        auto r = getLocalBounds();
+        toneStrip.setBounds (r.removeFromBottom (56));
+        r.removeFromBottom (6);
+        rackView.setBounds (r);
+    }
+
+    RackView  rackView;
+    ToneStrip toneStrip;
+};
+
+//==============================================================================
 class RackEditor : public melon::EditorBase<RackProcessor>
 {
 public:
     explicit RackEditor (RackProcessor&);
 
 private:
-    void timerCallback() override { rackView.refresh(); }
-    RackView rackView;
+    void timerCallback() override
+    {
+        body.rackView.refresh();
+        body.toneStrip.refresh();
+    }
+    RackBody body;
 };

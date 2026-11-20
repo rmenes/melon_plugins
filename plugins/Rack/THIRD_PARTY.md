@@ -10,6 +10,7 @@ Melon Rack links the libraries below. Their licences allow use in free and comme
 | [RTNeural](https://github.com/jatinchowdhury18/RTNeural) | Jatin Chowdhury | AIDA-X / Keras models, used through NeuralAudio | BSD 3-Clause |
 | [Eigen](https://eigen.tuxfamily.org) | Eigen contributors | Linear algebra, used by the engines | MPL 2.0 |
 | [JUCE](https://juce.com) | Raw Material Software | Plugin framework (the whole series) | AGPLv3 or commercial |
+| [TONE3000](https://www.tone3000.com) API | TONE3000 | Sign-in and user-requested downloads of NAM captures and IRs. No tones are distributed with Melon Rack. | [API Terms of Service](https://www.tone3000.com/api/terms) |
 
 ## MIT licence (NeuralAudio, NeuralAmpModelerCore)
 

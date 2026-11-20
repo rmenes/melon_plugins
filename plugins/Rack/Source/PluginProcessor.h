@@ -4,6 +4,8 @@
 #include <juce_dsp/juce_dsp.h>
 #include "NeuralModelSlot.h"
 #include "RackDsp.h"
+#include "Tone3000.h"
+#include "ToneSuggestions.h"
 
 // Melon Rack - neural amp model + impulse response loader.
 // Signal chain (mono in, stereo out), after NeuralRack by brummer10:
@@ -53,6 +55,22 @@ public:
 
     static const juce::String modelWildcard, irWildcard;
 
+    //==========================================================================
+    // TONE3000 (see Tone3000.h). Files are only downloaded when the user asks for them.
+    t3k::Client tone3000;
+
+    // Downloads the given tones and loads them into their slots, one after the other.
+    // matchSuggestion: when everything loaded, also empty the slots that have no suggestion,
+    // so the rack matches the preset's suggested setup.
+    void loadTones (std::vector<rack::ToneSuggestion> tones, bool matchSuggestion);
+    // Downloads one chosen capture / IR of a tone and loads it into a slot
+    void loadToneModel (rack::ToneSlot slot, const t3k::Tone& tone, const t3k::Model& model);
+
+    // Message thread only
+    const juce::String& toneStatus() const { return t3kStatus; }
+    bool                isLoadingTones() const { return t3kBusy; }
+    int                 toneStatusCounter() const { return t3kStatusCounter; }
+
 protected:
     void prepareDsp (double sampleRate, int maxBlock, int numChannels) override;
     void processDsp (float* const* data, int numChannels, int numSamples) override;
@@ -71,6 +89,16 @@ private:
     void processChunk (float* const* data, int numChannels, int offset, int n);
     void runModel (int slot, bool on, float inDb, float outDb, bool normalize, float* x, int n);
     void updateLatency();
+    void nextTone();
+    void toneFailed (const juce::String& message);
+    void setToneStatus (const juce::String& s) { t3kStatus = s; ++t3kStatusCounter; }
+    void applyToneFile (rack::ToneSlot slot, const juce::File& file);
+
+    std::vector<rack::ToneSuggestion> toneQueue;
+    size_t                            toneStep = 0;
+    bool                              toneMatch = false, t3kBusy = false;
+    juce::String                      t3kStatus;
+    int                               t3kStatusCounter = 0;
     void handleAsyncUpdate() override { updateLatency(); }
 
     ModelSlot slots[kNumModels];
