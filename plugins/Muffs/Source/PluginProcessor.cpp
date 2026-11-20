@@ -1,7 +1,11 @@
 #include "PluginProcessor.h"
 #include "PluginEditor.h"
+#include "FactoryPresets.h"
 
-MuffsProcessor::MuffsProcessor() : ProcessorBase (createParameterLayout(), 0.1) {}
+MuffsProcessor::MuffsProcessor() : ProcessorBase (createParameterLayout(), 0.1)
+{
+    presets.setFactoryPresets (muffs::factoryPresets());
+}
 
 melon::params::Layout MuffsProcessor::createParameterLayout()
 {

@@ -172,6 +172,8 @@ GraphicEqEditor::GraphicEqEditor (GraphicEqProcessor& p)
     titleLabel.setFont (juce::FontOptions (20.0f, juce::Font::bold));
     titleLabel.setColour (juce::Label::textColourId, colours::text);
     addAndMakeVisible (titleLabel);
+    melon::setUpVersionLabel (versionLabel);
+    addAndMakeVisible (versionLabel);
 
     modeBox.addItem ("10 bands", 1);
     modeBox.addItem ("31 bands", 2);
@@ -199,6 +201,8 @@ GraphicEqEditor::GraphicEqEditor (GraphicEqProcessor& p)
     outputLabel.setText ("Output", juce::dontSendNotification);
     outputLabel.setJustificationType (juce::Justification::centredRight);
     addAndMakeVisible (outputLabel);
+
+    addAndMakeVisible (presetBar);
 
     addAndMakeVisible (curve);
 
@@ -230,8 +234,8 @@ GraphicEqEditor::GraphicEqEditor (GraphicEqProcessor& p)
     }
 
     setResizable (true, true);
-    setResizeLimits (860, 450, 1800, 1000);
-    setSize (1000, 550);
+    setResizeLimits (860, 486, 1800, 1036);
+    setSize (1000, 586);
 
     updateVisibleBands();
     updateCurve();
@@ -269,7 +273,7 @@ void GraphicEqEditor::resized()
     const int logoW = logo.isValid() ? juce::roundToInt (40.0f * (float) logo.getWidth() / (float) logo.getHeight()) : 0;
     logoBounds = header.removeFromLeft (logoW);
     header.removeFromLeft (20);
-    titleLabel.setBounds (header.removeFromLeft (110));
+    melon::layoutTitle (header.removeFromLeft (110), titleLabel, versionLabel);
     header = header.reduced (0, 4);
     modeBox.setBounds (header.removeFromLeft (120).reduced (0, 2));
     header.removeFromLeft (12);
@@ -279,6 +283,8 @@ void GraphicEqEditor::resized()
     outputSlider.setBounds (header.removeFromRight (190));
     outputLabel.setBounds (header.removeFromRight (50));
 
+    area.removeFromTop (8);
+    presetBar.setBounds (area.removeFromTop (28));
     area.removeFromTop (10);
     curve.setBounds (area.removeFromTop (juce::jmax (120, area.getHeight() * 2 / 5)));
     area.removeFromTop (10);

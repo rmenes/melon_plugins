@@ -1,6 +1,7 @@
 #pragma once
 
 #include <juce_audio_processors/juce_audio_processors.h>
+#include <MelonPresets.h>
 #include "ChorusDsp.h"
 
 class ChorusProcessor : public juce::AudioProcessor
@@ -24,10 +25,11 @@ public:
     bool isMidiEffect() const override { return false; }
     double getTailLengthSeconds() const override { return 0.02; }
 
-    int getNumPrograms() override { return 1; }
-    int getCurrentProgram() override { return 0; }
-    void setCurrentProgram (int) override {}
-    const juce::String getProgramName (int) override { return {}; }
+    // The host's program list is the factory presets
+    int getNumPrograms() override { return presets.getNumPrograms(); }
+    int getCurrentProgram() override { return presets.getCurrentProgram(); }
+    void setCurrentProgram (int index) override { presets.setCurrentProgram (index); }
+    const juce::String getProgramName (int index) override { return presets.getProgramName (index); }
     void changeProgramName (int, const juce::String&) override {}
 
     void getStateInformation (juce::MemoryBlock& destData) override;
@@ -42,6 +44,7 @@ public:
     float lfoPhase() const { return uiPhase.load(); }
 
     juce::AudioProcessorValueTreeState apvts;
+    melon::PresetManager presets { *this, JucePlugin_Name }; // after apvts
 
 private:
     chorus::Engine engine;

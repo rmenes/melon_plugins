@@ -1,5 +1,6 @@
 #include "PluginProcessor.h"
 #include "PluginEditor.h"
+#include "FactoryPresets.h"
 #include <juce_audio_formats/juce_audio_formats.h>
 
 const juce::String RackProcessor::modelWildcard = "*.nam;*.json;*.aidax";
@@ -26,6 +27,31 @@ juce::String rateText (double hz)
 RackProcessor::RackProcessor() : ProcessorBase (createParameterLayout(), 0.5)
 {
     lastModelFolder = lastIrFolder = juce::File::getSpecialLocation (juce::File::userDocumentsDirectory);
+
+    // Factory presets only set the controls and keep the loaded models / IRs.
+    // User presets also remember the model and IR files.
+    presets.setFactoryPresets (rack::factoryPresets());
+    presets.writeExtras = [this] (juce::XmlElement& xml) {
+        for (int s = 0; s < kNumModels; ++s)
+            xml.setAttribute (kModelProps[s], modelStatus (s).file.getFullPathName());
+        for (int s = 0; s < kNumIrs; ++s)
+            xml.setAttribute (kIrProps[s], irStatus (s).file.getFullPathName());
+    };
+    presets.readExtras = [this] (const juce::XmlElement& xml) {
+        auto apply = [&xml] (const char* prop, auto load, auto clear) {
+            if (! xml.hasAttribute (prop))
+                return; // preset saved without this slot: leave it as it is
+            const auto path = xml.getStringAttribute (prop);
+            if (path.isNotEmpty() && juce::File::isAbsolutePath (path) && juce::File (path).existsAsFile())
+                load (juce::File (path));
+            else if (path.isEmpty())
+                clear();
+        };
+        for (int s = 0; s < kNumModels; ++s)
+            apply (kModelProps[s], [this, s] (const juce::File& f) { loadModel (s, f); }, [this, s] { clearModel (s); });
+        for (int s = 0; s < kNumIrs; ++s)
+            apply (kIrProps[s], [this, s] (const juce::File& f) { loadIr (s, f); }, [this, s] { clearIr (s); });
+    };
 }
 
 RackProcessor::~RackProcessor()
@@ -425,13 +451,14 @@ RackProcessor::SlotStatus RackProcessor::irStatus (int s) const
 // The file paths are stored with the parameters, so projects and presets reload them.
 void RackProcessor::getStateInformation (juce::MemoryBlock& destData)
 {
-    auto state = apvts.copyState();
-    for (int s = 0; s < kNumModels; ++s)
-        state.setProperty (kModelProps[s], modelStatus (s).file.getFullPathName(), nullptr);
-    for (int s = 0; s < kNumIrs; ++s)
-        state.setProperty (kIrProps[s], irStatus (s).file.getFullPathName(), nullptr);
-    if (auto xml = state.createXml())
+    if (auto xml = createStateXml())
+    {
+        for (int s = 0; s < kNumModels; ++s)
+            xml->setAttribute (kModelProps[s], modelStatus (s).file.getFullPathName());
+        for (int s = 0; s < kNumIrs; ++s)
+            xml->setAttribute (kIrProps[s], irStatus (s).file.getFullPathName());
         copyXmlToBinary (*xml, destData);
+    }
 }
 
 void RackProcessor::setStateInformation (const void* data, int sizeInBytes)
@@ -454,6 +481,102 @@ void RackProcessor::setStateInformation (const void* data, int sizeInBytes)
             loadIr (s, juce::File (path));
         else
             clearIr (s);
+    }
+}
+
+//==============================================================================
+// TONE3000: download the suggested tones of a preset (or one chosen capture) and load them
+void RackProcessor::loadTones (std::vector<rack::ToneSuggestion> tones, bool matchSuggestion)
+{
+    if (t3kBusy || tones.empty())
+        return;
+    toneQueue = std::move (tones);
+    toneStep  = 0;
+    toneMatch = matchSuggestion;
+    t3kBusy   = true;
+    nextTone();
+}
+
+void RackProcessor::nextTone()
+{
+    if (toneStep >= toneQueue.size())
+    {
+        if (toneMatch)
+        {
+            bool used[4] {};
+            for (const auto& t : toneQueue)
+                used[(int) t.slot] = true;
+            if (! used[(int) rack::ToneSlot::pedal]) clearModel (0);
+            if (! used[(int) rack::ToneSlot::amp])   clearModel (1);
+            if (! used[(int) rack::ToneSlot::ir1])   clearIr (0);
+            if (! used[(int) rack::ToneSlot::ir2])   clearIr (1);
+        }
+        const auto n = toneQueue.size();
+        toneQueue.clear();
+        t3kBusy = false;
+        setToneStatus ("Loaded " + juce::String ((int) n) + (n == 1 ? " tone" : " tones")
+                       + " from TONE3000. Use Save As to keep them in a user preset.");
+        return;
+    }
+
+    const auto s = toneQueue[toneStep];
+    setToneStatus ("TONE3000: getting " + juce::String (rack::slotName (s.slot)) + " - " + s.title + " ("
+                   + juce::String ((int) toneStep + 1) + "/" + juce::String ((int) toneQueue.size()) + ")...");
+
+    tone3000.fetchTone (s.toneId, [this, s] (juce::Result r, const t3k::Tone& tone) {
+        if (r.failed())
+            return toneFailed (s.title + ": " + r.getErrorMessage());
+
+        const t3k::Model* pick = &tone.models.front();
+        if (s.modelHint.isNotEmpty())
+            for (const auto& m : tone.models)
+                if (m.name.containsIgnoreCase (s.modelHint))
+                {
+                    pick = &m;
+                    break;
+                }
+
+        tone3000.download (tone, *pick, [this, s] (juce::Result r2, const juce::File& file) {
+            if (r2.failed())
+                return toneFailed (s.title + ": " + r2.getErrorMessage());
+            applyToneFile (s.slot, file);
+            ++toneStep;
+            nextTone();
+        });
+    });
+}
+
+void RackProcessor::toneFailed (const juce::String& message)
+{
+    toneQueue.clear();
+    t3kBusy = false;
+    setToneStatus (message);
+}
+
+void RackProcessor::loadToneModel (rack::ToneSlot slot, const t3k::Tone& tone, const t3k::Model& model)
+{
+    if (t3kBusy)
+        return;
+    t3kBusy = true;
+    setToneStatus ("TONE3000: downloading " + model.name + "...");
+    tone3000.download (tone, model, [this, slot, tone, model] (juce::Result r, const juce::File& file) {
+        t3kBusy = false;
+        if (r.failed())
+            return setToneStatus (r.getErrorMessage());
+        applyToneFile (slot, file);
+        setToneStatus ("Loaded " + model.name + (tone.creator.isNotEmpty() ? " by " + tone.creator : juce::String())
+                       + " from TONE3000.");
+    });
+}
+
+void RackProcessor::applyToneFile (rack::ToneSlot slot, const juce::File& file)
+{
+    switch (slot)
+    {
+        case rack::ToneSlot::pedal: loadModel (0, file); lastModelFolder = file.getParentDirectory(); break;
+        case rack::ToneSlot::amp:   loadModel (1, file); lastModelFolder = file.getParentDirectory(); break;
+        case rack::ToneSlot::ir1:   loadIr (0, file);    lastIrFolder    = file.getParentDirectory(); break;
+        case rack::ToneSlot::ir2:   loadIr (1, file);    lastIrFolder    = file.getParentDirectory(); break;
     }
 }
 

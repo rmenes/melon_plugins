@@ -1,7 +1,11 @@
 #include "PluginProcessor.h"
 #include "PluginEditor.h"
+#include "FactoryPresets.h"
 
-Delay2290Processor::Delay2290Processor() : ProcessorBase (createParameterLayout(), 10.0) {}
+Delay2290Processor::Delay2290Processor() : ProcessorBase (createParameterLayout(), 10.0)
+{
+    presets.setFactoryPresets (delay2290::factoryPresets());
+}
 
 melon::params::Layout Delay2290Processor::createParameterLayout()
 {

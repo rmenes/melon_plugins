@@ -1,5 +1,6 @@
 #include "PluginProcessor.h"
 #include "PluginEditor.h"
+#include "FactoryPresets.h"
 
 FlangerProcessor::FlangerProcessor()
     : AudioProcessor (BusesProperties()
@@ -7,6 +8,8 @@ FlangerProcessor::FlangerProcessor()
                           .withOutput ("Output", juce::AudioChannelSet::stereo(), true)),
       apvts (*this, nullptr, "PARAMETERS", createParameterLayout())
 {
+    presets.setFactoryPresets (flanger::factoryPresets());
+
     manualParam = apvts.getRawParameterValue ("manual");
     widthParam  = apvts.getRawParameterValue ("width");
     speedParam  = apvts.getRawParameterValue ("speed");
@@ -123,16 +126,22 @@ juce::AudioProcessorParameter* FlangerProcessor::getBypassParameter() const
 
 void FlangerProcessor::getStateInformation (juce::MemoryBlock& destData)
 {
-    auto state = apvts.copyState();
-    if (auto xml = state.createXml())
+    if (auto xml = apvts.copyState().createXml())
+    {
+        presets.writeState (*xml);
         copyXmlToBinary (*xml, destData);
+    }
 }
 
 void FlangerProcessor::setStateInformation (const void* data, int sizeInBytes)
 {
     if (auto xml = getXmlFromBinary (data, sizeInBytes))
         if (xml->hasTagName (apvts.state.getType()))
+        {
+            auto presetInfo = presets.extractState (*xml);
             apvts.replaceState (juce::ValueTree::fromXml (*xml));
+            presets.restoreState (presetInfo.get());
+        }
 }
 
 juce::AudioProcessorEditor* FlangerProcessor::createEditor()

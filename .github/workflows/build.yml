@@ -1,6 +1,6 @@
 # Builds every Melon plugin on GitHub's machines:
 #   Windows (VST3 + Standalone), macOS (VST3 + AU + Standalone, Apple Silicon + Intel)
-#   and Linux (LV2 + VST3 + Standalone).
+#   Linux x86_64 (LV2 + VST3 + Standalone) and Linux arm64 (LV2, e.g. Raspberry Pi 4/5).
 #
 # - Every push: builds and tests everything. The zips are under Actions > (run) > Artifacts.
 # - Publishing a release (Releases > Draft a new release > tag "v1.0.0" > Publish):
@@ -96,7 +96,7 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y libasound2-dev libjack-jackd2-dev libx11-dev libxcomposite-dev \
             libxcursor-dev libxext-dev libxinerama-dev libxrandr-dev libxrender-dev \
-            libfreetype6-dev libfontconfig1-dev libgl1-mesa-dev
+            libfreetype6-dev libfontconfig1-dev libgl1-mesa-dev libcurl4-openssl-dev
       - name: Configure
         run: cmake -B build -DCMAKE_BUILD_TYPE=Release
       - name: Build
@@ -122,10 +122,48 @@ jobs:
           name: Melon-Plugins-Linux
           path: dist/*.zip
 
-  # Only when a release is published: attach the three zips to the release page
+  # LV2 for 64-bit ARM Linux (Raspberry Pi 4/5 with a 64-bit OS, other aarch64 boards).
+  # Built natively on GitHub's arm64 runner (free for public repositories), so no cross-compiling.
+  # Ubuntu 22.04 (glibc 2.35) keeps the binaries compatible with Raspberry Pi OS Bookworm (glibc 2.36) and newer.
+  linux-arm64:
+    runs-on: ubuntu-22.04-arm
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libasound2-dev libjack-jackd2-dev libx11-dev libxcomposite-dev \
+            libxcursor-dev libxext-dev libxinerama-dev libxrandr-dev libxrender-dev \
+            libfreetype6-dev libfontconfig1-dev libgl1-mesa-dev libcurl4-openssl-dev
+      - name: Configure
+        run: cmake -B build -DCMAKE_BUILD_TYPE=Release -DMELON_FORMATS=LV2
+      - name: Build
+        run: cmake --build build --parallel 4
+      - name: Test
+        run: |
+          set -e
+          for t in build/plugins/*/*_test_*; do if [ -x "$t" ]; then "$t"; fi; done
+      - name: Check the binaries are arm64
+        run: |
+          file build/plugins/*/*_artefacts/Release/LV2/*.lv2/*.so
+          ! file build/plugins/*/*_artefacts/Release/LV2/*.lv2/*.so | grep -v aarch64
+      - name: Package
+        run: |
+          V="${MELON_VERSION:0:16}"
+          D="Melon-Plugins-$V-Linux-arm64"
+          mkdir -p "dist/$D/LV2"
+          cp -R build/plugins/*/*_artefacts/Release/LV2/*.lv2 "dist/$D/LV2/"
+          cp docs/install/INSTALL-Linux-arm64.txt "dist/$D/INSTALL.txt"
+          cd dist && zip -qry "$D.zip" "$D"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Melon-Plugins-Linux-arm64
+          path: dist/*.zip
+
+  # Only when a release is published: attach the four zips to the release page
   release:
     if: github.event_name == 'release'
-    needs: [windows, macos, linux]
+    needs: [windows, macos, linux, linux-arm64]
     runs-on: ubuntu-latest
     permissions:
       contents: write

@@ -177,6 +177,8 @@ ChorusEditor::ChorusEditor (ChorusProcessor& p)
     titleLabel.setFont (juce::FontOptions (20.0f, juce::Font::bold));
     titleLabel.setColour (juce::Label::textColourId, colours::text);
     addAndMakeVisible (titleLabel);
+    melon::setUpVersionLabel (versionLabel);
+    addAndMakeVisible (versionLabel);
 
     addAndMakeVisible (bypassButton);
     bypassAttachment = std::make_unique<ButtonAttachment> (processor.apvts, "bypass", bypassButton);
@@ -193,6 +195,8 @@ ChorusEditor::ChorusEditor (ChorusProcessor& p)
     outputLabel.setJustificationType (juce::Justification::centredRight);
     addAndMakeVisible (outputLabel);
 
+    addAndMakeVisible (presetBar);
+
     addAndMakeVisible (display);
 
     setUpKnob (rate, "rate", "Rate", 0.8, false, "Speed of the chorus sweep");
@@ -202,8 +206,8 @@ ChorusEditor::ChorusEditor (ChorusProcessor& p)
     setUpKnob (tone, "tone", "Tone", 0.0, true, "Tone of the chorus signal. Left = darker and warmer, right = brighter");
 
     setResizable (true, true);
-    setResizeLimits (620, 380, 1400, 860);
-    setSize (720, 430);
+    setResizeLimits (620, 416, 1400, 896);
+    setSize (720, 466);
 
     timerCallback(); // show the current settings straight away
     startTimerHz (30);
@@ -267,12 +271,14 @@ void ChorusEditor::resized()
     const int logoW = logo.isValid() ? juce::roundToInt (40.0f * (float) logo.getWidth() / (float) logo.getHeight()) : 0;
     logoBounds = header.removeFromLeft (logoW);
     header.removeFromLeft (20);
-    titleLabel.setBounds (header.removeFromLeft (90));
+    melon::layoutTitle (header.removeFromLeft (90), titleLabel, versionLabel);
     header = header.reduced (0, 4);
     bypassButton.setBounds (header.removeFromLeft (90));
     outputSlider.setBounds (header.removeFromRight (190));
     outputLabel.setBounds (header.removeFromRight (50));
 
+    area.removeFromTop (8);
+    presetBar.setBounds (area.removeFromTop (28));
     area.removeFromTop (10);
     knobPanel = area.removeFromBottom (juce::jmax (180, area.getHeight() * 11 / 20));
     area.removeFromBottom (10);

@@ -7,6 +7,19 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # --- Series identity (the same for every plugin) ------------------------------
+# Version of every plugin in the series (shown under each plugin's title and
+# reported to the host). Bump it here before a release, e.g. 1.2.0 -> 1.3.0.
+set(MELON_VERSION           "1.2.0")
+
+# TONE3000 publishable key (client_id) used by Melon Rack to sign in and download tones.
+# Create it at https://www.tone3000.com/settings (API keys). It is meant to be public
+# (it ships inside the plugin), so it can be written here. Never put the SECRET key here.
+# One key for the app: every user still signs in with their own TONE3000 account.
+# Empty = Melon Rack only opens the suggested tones in the browser.
+# Can also be passed on the command line: -DMELON_TONE3000_CLIENT_ID=...
+if(NOT DEFINED MELON_TONE3000_CLIENT_ID)
+    set(MELON_TONE3000_CLIENT_ID "t3k_pub_UBVTD9VHp8JRasys1BgLrcgAtE_rkkKU")
+endif()
 set(MELON_COMPANY_NAME      "Melon")
 set(MELON_MANUFACTURER_CODE "Meln")
 set(MELON_LV2_URI_BASE      "https://github.com/melon-audio")
@@ -45,11 +58,19 @@ if(NOT TARGET MelonBranding)
     set_target_properties(MelonBranding PROPERTIES POSITION_INDEPENDENT_CODE TRUE)
 endif()
 
-# Applies the series' standard definitions and flags to a plugin
+# Applies the series' standard definitions and flags to a plugin.
+# melon_configure_plugin(<target> NETWORK) for plugins that use HTTPS: on Linux this needs
+# libcurl (also add NEEDS_CURL TRUE to juce_add_plugin). Windows and macOS use the OS.
 function(melon_configure_plugin target)
+    cmake_parse_arguments(MELON "NETWORK" "" "" ${ARGN})
+    set(melon_use_curl 0)
+    if(MELON_NETWORK AND CMAKE_SYSTEM_NAME STREQUAL "Linux")
+        set(melon_use_curl 1)
+    endif()
+
     target_compile_definitions(${target} PUBLIC
         JUCE_WEB_BROWSER=0
-        JUCE_USE_CURL=0
+        JUCE_USE_CURL=${melon_use_curl}
         JUCE_VST3_CAN_REPLACE_VST2=0)
 
     target_include_directories(${target} PRIVATE ${MELON_SHARED_DIR})

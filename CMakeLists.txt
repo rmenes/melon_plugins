@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.22)
 
-project(MelonPlugins VERSION 1.0.0 LANGUAGES C CXX)
+project(MelonPlugins LANGUAGES C CXX) # version: MELON_VERSION in cmake/MelonCommon.cmake
 
 include(cmake/MelonCommon.cmake)
 
@@ -17,3 +17,4 @@ add_subdirectory(plugins/Delay2290)
 add_subdirectory(plugins/Rack)
 add_subdirectory(plugins/Comp)
 add_subdirectory(plugins/ProEQ)
+add_subdirectory(plugins/Shifter)

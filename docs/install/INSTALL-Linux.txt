@@ -15,6 +15,9 @@ Installing the plugins
 3. Open your DAW (Ardour, Reaper, Bitwig, Carla, ...) and rescan plugins.
    They appear under the manufacturer "Melon".
 
+Melon Rack uses libcurl for its TONE3000 downloads (installed on almost every
+desktop distribution; otherwise install libcurl4 / libcurl with your package manager).
+
 Standalone apps
 ---------------
 The "Standalone" folder has each plugin as a separate program (uses JACK or ALSA).
@@ -23,4 +26,5 @@ If it doesn't start, make it executable first:  chmod +x Standalone/*
 Plugins in this package
 -----------------------
 Melon GraphicEQ, Melon Chorus, Melon Flanger, Melon Guitar Synth, Melon Dirt,
-Melon Muffs, Melon Gates of Doom, Melon Reverberare, Melon Delay 2290, Melon Rack, Melon Comp
+Melon Muffs, Melon Gates of Doom, Melon Reverberare, Melon Delay 2290, Melon Rack, Melon Comp,
+Melon Pro EQ, Melon Shifter

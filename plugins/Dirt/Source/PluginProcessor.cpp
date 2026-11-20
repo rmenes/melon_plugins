@@ -1,7 +1,11 @@
 #include "PluginProcessor.h"
 #include "PluginEditor.h"
+#include "FactoryPresets.h"
 
-DirtProcessor::DirtProcessor() : ProcessorBase (createParameterLayout(), 0.1) {}
+DirtProcessor::DirtProcessor() : ProcessorBase (createParameterLayout(), 0.1)
+{
+    presets.setFactoryPresets (dirt::factoryPresets());
+}
 
 melon::params::Layout DirtProcessor::createParameterLayout()
 {

@@ -1,7 +1,11 @@
 #include "PluginProcessor.h"
 #include "PluginEditor.h"
+#include "FactoryPresets.h"
 
-ReverberareProcessor::ReverberareProcessor() : ProcessorBase (createParameterLayout(), 30.0) {}
+ReverberareProcessor::ReverberareProcessor() : ProcessorBase (createParameterLayout(), 30.0)
+{
+    presets.setFactoryPresets (reverb::factoryPresets());
+}
 
 melon::params::Layout ReverberareProcessor::createParameterLayout()
 {

@@ -1,0 +1,53 @@
+MELON PLUGINS - Linux arm64 (Raspberry Pi and other 64-bit ARM boards)
+======================================================================
+
+What you need
+-------------
+- A 64-bit ARM Linux system, for example a Raspberry Pi 4 or 5 with
+  Raspberry Pi OS (64-bit) Bookworm or newer, or Ubuntu 22.04+ for ARM.
+  The 32-bit Raspberry Pi OS is NOT supported. Check with:   uname -m
+  (it must print "aarch64").
+- An LV2 host: Carla, Ardour, Reaper (ARM build), Zrythm, mod-host, ...
+
+This package has the LV2 versions only.
+
+Installing the plugins
+----------------------
+1. Copy the folders inside "LV2" (Melon Dirt.lv2, ...) to:   ~/.lv2/
+
+   For example, from this folder:
+
+       mkdir -p ~/.lv2
+       cp -r LV2/*.lv2 ~/.lv2/
+
+   (To install them for every user, copy them to /usr/local/lib/lv2/ instead.)
+
+2. Open your host and rescan plugins. They appear under the manufacturer "Melon".
+
+The plugin windows need a desktop (X11, or Wayland with XWayland, which is the
+default on Raspberry Pi OS). Headless hosts such as mod-host run the plugins
+without their windows.
+
+Libraries
+---------
+The plugins use libraries that come with the desktop version of Raspberry Pi OS
+and Ubuntu. On a minimal ("Lite") system, install them with:
+
+    sudo apt install libfreetype6 libfontconfig1 libx11-6 libxext6 libcurl4 libasound2
+
+(libcurl4 is used by Melon Rack for its TONE3000 downloads.)
+
+Performance tips
+----------------
+- Use a buffer of 128 or 256 samples; 64 may crackle on a Raspberry Pi.
+- Melon Rack (neural amp models) is the heaviest plugin. On a Raspberry Pi,
+  prefer "Nano" or "Feather" NAM models, or AIDA-X models; "Standard" NAM
+  models may be too heavy, especially on a Pi 4.
+- Melon Pro EQ's Linear Phase mode and Melon Reverberare's larger machines also
+  use more CPU.
+
+Plugins in this package
+-----------------------
+Melon GraphicEQ, Melon Chorus, Melon Flanger, Melon Guitar Synth, Melon Dirt,
+Melon Muffs, Melon Gates of Doom, Melon Reverberare, Melon Delay 2290, Melon Rack, Melon Comp,
+Melon Pro EQ, Melon Shifter
