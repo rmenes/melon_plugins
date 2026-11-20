@@ -289,6 +289,8 @@ GuitarSynthEditor::GuitarSynthEditor (GuitarSynthProcessor& p)
     outputLabel.setJustificationType (juce::Justification::centredRight);
     addAndMakeVisible (outputLabel);
 
+    addAndMakeVisible (presetBar);
+
     addAndMakeVisible (display);
 
     setUpFader (trigger, "trigger", "Trigger", 50.0,
@@ -313,8 +315,8 @@ GuitarSynthEditor::GuitarSynthEditor (GuitarSynthProcessor& p)
                 "lower it to add the dry signal back in parallel");
 
     setResizable (true, true);
-    setResizeLimits (820, 580, 1600, 1100);
-    setSize (940, 640);
+    setResizeLimits (820, 616, 1600, 1136);
+    setSize (940, 676);
 
     timerCallback();
     startTimerHz (30);
@@ -398,6 +400,8 @@ void GuitarSynthEditor::resized()
     outputSlider.setBounds (header.removeFromRight (190));
     outputLabel.setBounds (header.removeFromRight (50));
 
+    area.removeFromTop (8);
+    presetBar.setBounds (area.removeFromTop (28));
     area.removeFromTop (10);
     faderPanel = area.removeFromBottom (juce::jmax (300, area.getHeight() * 11 / 20));
     area.removeFromBottom (10);

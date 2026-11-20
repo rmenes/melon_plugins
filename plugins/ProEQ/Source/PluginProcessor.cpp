@@ -1,5 +1,6 @@
 #include "PluginProcessor.h"
 #include "PluginEditor.h"
+#include "FactoryPresets.h"
 
 using namespace melon::params;
 
@@ -30,6 +31,8 @@ juce::String dbText (float v) { return (v > 0.0f ? "+" : "") + juce::String (v, 
 
 ProEqProcessor::ProEqProcessor() : ProcessorBase (createParameterLayout(), 0.0)
 {
+    presets.setFactoryPresets (proeq::factoryPresets());
+
     for (int b = 0; b < proeq::kNumBands; ++b)
     {
         auto get = [&] (const char* f) { return apvts.getRawParameterValue (bandId (b, f)); };

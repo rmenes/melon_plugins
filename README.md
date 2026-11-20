@@ -24,6 +24,10 @@ All plugins share the same identity (manufacturer **Melon**) and the same build 
 
 The full list of plugin codes and identifiers is in [`docs/PLUGIN_REGISTRY.md`](docs/PLUGIN_REGISTRY.md).
 
+## Presets
+
+Every plugin has a preset menu under its header, with 10 factory presets and room for 64 user presets. User presets are saved as small `.melonpreset` files in `Documents/Melon Plugins/Presets/<Plugin name>/`. Copy that folder to move or share your presets (the files work on Windows, Linux and Mac). The factory presets also appear in the host's own preset/program list. Details: [docs/NEW_PLUGIN.md](docs/NEW_PLUGIN.md#presets).
+
 ## Folder layout
 
 ```

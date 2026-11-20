@@ -1,5 +1,6 @@
 #include "PluginProcessor.h"
 #include "PluginEditor.h"
+#include "FactoryPresets.h"
 
 ChorusProcessor::ChorusProcessor()
     : AudioProcessor (BusesProperties()
@@ -7,6 +8,8 @@ ChorusProcessor::ChorusProcessor()
                           .withOutput ("Output", juce::AudioChannelSet::stereo(), true)),
       apvts (*this, nullptr, "PARAMETERS", createParameterLayout())
 {
+    presets.setFactoryPresets (chorus::factoryPresets());
+
     rateParam   = apvts.getRawParameterValue ("rate");
     depthParam  = apvts.getRawParameterValue ("depth");
     widthParam  = apvts.getRawParameterValue ("width");
@@ -130,16 +133,22 @@ juce::AudioProcessorParameter* ChorusProcessor::getBypassParameter() const
 
 void ChorusProcessor::getStateInformation (juce::MemoryBlock& destData)
 {
-    auto state = apvts.copyState();
-    if (auto xml = state.createXml())
+    if (auto xml = apvts.copyState().createXml())
+    {
+        presets.writeState (*xml);
         copyXmlToBinary (*xml, destData);
+    }
 }
 
 void ChorusProcessor::setStateInformation (const void* data, int sizeInBytes)
 {
     if (auto xml = getXmlFromBinary (data, sizeInBytes))
         if (xml->hasTagName (apvts.state.getType()))
+        {
+            auto presetInfo = presets.extractState (*xml);
             apvts.replaceState (juce::ValueTree::fromXml (*xml));
+            presets.restoreState (presetInfo.get());
+        }
 }
 
 juce::AudioProcessorEditor* ChorusProcessor::createEditor()

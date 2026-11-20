@@ -2,6 +2,7 @@
 
 #include <juce_audio_processors/juce_audio_processors.h>
 #include "PluginProcessor.h"
+#include <MelonPresets.h>
 
 //==============================================================================
 class ChorusLookAndFeel : public juce::LookAndFeel_V4
@@ -61,6 +62,7 @@ private:
     juce::ToggleButton   bypassButton { "Bypass" };
     juce::Slider         outputSlider;
     juce::Label          outputLabel;
+    melon::PresetBar presetBar { processor.presets };
     ModulationDisplay    display;
 
     Knob rate, depth, width, mix, tone;

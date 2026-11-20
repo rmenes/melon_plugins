@@ -27,6 +27,7 @@ plugins/Compressor/
 ├── Source/
 │   ├── PluginProcessor.h / .cpp   ← parameters and audio processing
 │   ├── PluginEditor.h / .cpp      ← user interface
+│   ├── FactoryPresets.h           ← the plugin's 10 factory presets
 │   └── (DSP in plain C++, without JUCE, so it can be tested on its own)
 └── tests/
 ```
@@ -97,7 +98,18 @@ The newer plugins (Dirt, Muffs, Gates of Doom, Reverberare, Delay 2290) are buil
 
 - `MelonProcessorBase.h` — `melon::ProcessorBase`: buses (mono, stereo, mono → stereo), state saving, the Bypass parameter, and parameter helpers (`melon::params::addPercent`, `addFloat`, `addDb`, `addChoice`, `addBool`, `addOutputAndBypass`). Override `prepareDsp()` and `processDsp()`.
 - `MelonEditorBase.h` — the series palette (`melon::colours`), the look-and-feel and `melon::EditorBase<Processor>`, which draws the standard header (logo, title, Bypass, Output) and lays out an optional display, a selector row (`addChoiceBox`, `addToggle`, `addRowLabel`, `makeButton` + `addRowItem`) and the knob panel (`addKnob`). Finish the constructor with `finishSetup (width, height, minWidth, minHeight)`.
+- `MelonPresets.h` — the preset system shared by every plugin: `melon::PresetManager` (factory presets, up to 64 user presets, host program list, preset name saved with the project) and `melon::PresetBar` (the preset row under the header). `ProcessorBase` and `EditorBase` include it automatically; a plugin only calls `presets.setFactoryPresets (myns::factoryPresets());` in its processor constructor. See "Presets" below.
 - `MelonDsp.h` — plain C++ building blocks: `Smoother`, `Biquad`, `OnePole`, `DelayLine` (Hermite interpolation), `Oversampler4x`, `Noise`.
 - `TestSignals.h` — test signals (sine, plucked guitar chords) and measurements for the DSP tests.
 
 Compile a DSP test with `g++ -std=c++17 -O2 -ISource -I../../shared tests/test_dsp.cpp -o test_dsp`.
+
+## Presets
+
+Every plugin has a preset row under its header: `Preset [<] [name] [>]   [Save] [Save As]`. Clicking the name opens the menu (factory presets, user presets, Save, Save As, Delete, Reset to Default, Open Preset Folder). A `*` after the name means the settings were changed since the preset was loaded or saved.
+
+- **Factory presets** live in `Source/FactoryPresets.h`: a list of `{ "Name", { { "paramId", value }, ... } }` in real units (Hz, ms, %, choice index). Parameters that are not listed take their default value. "Default" is always added as the first preset. Factory presets are also the host's program list (VST3 program list, LV2 presets).
+- **User presets** are XML files (`.melonpreset`) in `Documents/Melon Plugins/Presets/<Plugin name>/`, up to 64 per plugin. They store every parameter except Bypass, in real units, so they keep working if a parameter range changes later and can be shared between Windows, Linux and Mac.
+- The current preset name and its "changed" state are saved with the DAW project.
+- Plugins with extra state that is not a parameter (Melon Rack's model and IR files) fill `presets.writeExtras` / `presets.readExtras`. Factory presets never call `readExtras`, so they keep what is loaded.
+- For a plugin that does not use `ProcessorBase`, add a `melon::PresetManager presets { *this, JucePlugin_Name };` member after the APVTS, forward the four program functions to it, and call `presets.writeState()` / `extractState()` / `restoreState()` in `getStateInformation()` / `setStateInformation()` (see Melon Chorus). Add a `melon::PresetBar` to the editor.

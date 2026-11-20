@@ -2,6 +2,7 @@
 //
 //   ┌──────────────────────────────────────────────────────────────┐
 //   │ [Melon logo] | Title   [Bypass]                 Output [===] │  header
+//   │ Preset [<] [ preset name        ] [>]       [Save] [Save As] │  presets
 //   │ ┌──────────────────────────────────────────────────────────┐ │
 //   │ │                        display                           │ │  (optional)
 //   │ └──────────────────────────────────────────────────────────┘ │
@@ -14,6 +15,7 @@
 
 #include <juce_audio_processors/juce_audio_processors.h>
 #include <MelonBranding.h>
+#include "MelonPresets.h"
 
 namespace melon
 {
@@ -152,6 +154,8 @@ public:
         outputLabel.setText ("Output", juce::dontSendNotification);
         outputLabel.setJustificationType (juce::Justification::centredRight);
         addAndMakeVisible (outputLabel);
+
+        addAndMakeVisible (presetBar);
     }
 
     ~EditorBase() override
@@ -187,6 +191,8 @@ public:
         bypassButton.setBounds (header.removeFromLeft (90));
         outputSlider.setBounds (header.removeFromRight (190));
         outputLabel.setBounds (header.removeFromRight (50));
+        area.removeFromTop (8);
+        presetBar.setBounds (area.removeFromTop (kPresetRowHeight));
         area.removeFromTop (10);
 
         // knob panel
@@ -323,8 +329,11 @@ protected:
         addAndMakeVisible (c);
     }
 
+    // Sizes are without the preset row; its height is added here.
     void finishSetup (int w, int h, int minW, int minH)
     {
+        h += kPresetRowHeight + 8;
+        minH += kPresetRowHeight + 8;
         setResizable (true, true);
         setResizeLimits (minW, minH, minW * 2, minH * 2);
         setSize (w, h);
@@ -347,6 +356,8 @@ protected:
     std::vector<std::unique_ptr<Knob>> knobs;
     int knobsPerRow = 6;
     int titleWidth  = 130;
+
+    static constexpr int kPresetRowHeight = 28;
 
 private:
     void layoutKnobs (juce::Rectangle<int> r, int rows)
@@ -389,6 +400,7 @@ private:
     juce::Slider         outputSlider;
     juce::Label          outputLabel;
     juce::Component*     display = nullptr;
+    PresetBar            presetBar { processor.presets };
 
     std::vector<RowItem>                              rowItems;
     std::vector<std::unique_ptr<juce::ComboBox>>      combos;

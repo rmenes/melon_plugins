@@ -1,7 +1,11 @@
 #include "PluginProcessor.h"
 #include "PluginEditor.h"
+#include "FactoryPresets.h"
 
-GatesOfDoomProcessor::GatesOfDoomProcessor() : ProcessorBase (createParameterLayout(), 0.0) {}
+GatesOfDoomProcessor::GatesOfDoomProcessor() : ProcessorBase (createParameterLayout(), 0.0)
+{
+    presets.setFactoryPresets (gate::factoryPresets());
+}
 
 melon::params::Layout GatesOfDoomProcessor::createParameterLayout()
 {

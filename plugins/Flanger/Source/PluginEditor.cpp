@@ -217,6 +217,8 @@ FlangerEditor::FlangerEditor (FlangerProcessor& p)
     outputLabel.setJustificationType (juce::Justification::centredRight);
     addAndMakeVisible (outputLabel);
 
+    addAndMakeVisible (presetBar);
+
     addAndMakeVisible (display);
 
     setUpKnob (manual, "manual", "Manual", 2.0,
@@ -231,8 +233,8 @@ FlangerEditor::FlangerEditor (FlangerProcessor& p)
                "Dry/wet balance. 50 = dry and flanged both at full level (deepest notches, like the pedal), 100 = flanged only (vibrato-like)");
 
     setResizable (true, true);
-    setResizeLimits (620, 380, 1400, 860);
-    setSize (720, 430);
+    setResizeLimits (620, 416, 1400, 896);
+    setSize (720, 466);
 
     timerCallback();
     startTimerHz (30);
@@ -301,6 +303,8 @@ void FlangerEditor::resized()
     outputSlider.setBounds (header.removeFromRight (190));
     outputLabel.setBounds (header.removeFromRight (50));
 
+    area.removeFromTop (8);
+    presetBar.setBounds (area.removeFromTop (28));
     area.removeFromTop (10);
     knobPanel = area.removeFromBottom (juce::jmax (180, area.getHeight() * 11 / 20));
     area.removeFromBottom (10);

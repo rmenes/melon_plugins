@@ -1,9 +1,10 @@
 // MelonProcessorBase.h - boilerplate shared by the Melon effect plugins (JUCE).
-// Handles buses (mono, stereo, mono -> stereo), state saving, the bypass parameter
+// Handles buses (mono, stereo, mono -> stereo), state saving, presets, the bypass parameter
 // and parameter helpers, so each plugin only writes its parameters and its DSP.
 #pragma once
 
 #include <juce_audio_processors/juce_audio_processors.h>
+#include "MelonPresets.h"
 
 namespace melon
 {
@@ -77,11 +78,13 @@ public:
                               .withInput ("Input", juce::AudioChannelSet::stereo(), true)
                               .withOutput ("Output", juce::AudioChannelSet::stereo(), true)),
           apvts (*this, nullptr, "PARAMETERS", std::move (layout)),
+          presets (*this, JucePlugin_Name),
           tail (tailSeconds)
     {
     }
 
     juce::AudioProcessorValueTreeState apvts;
+    PresetManager                      presets; // derived classes call presets.setFactoryPresets (...)
 
     // Raw value of a parameter (real units, as shown in the host)
     float value (const char* id) const
@@ -138,23 +141,36 @@ public:
     bool   isMidiEffect() const override { return false; }
     double getTailLengthSeconds() const override { return tail; }
 
-    int  getNumPrograms() override { return 1; }
-    int  getCurrentProgram() override { return 0; }
-    void setCurrentProgram (int) override {}
-    const juce::String getProgramName (int) override { return {}; }
+    // The host's program list is the factory presets
+    int  getNumPrograms() override { return presets.getNumPrograms(); }
+    int  getCurrentProgram() override { return presets.getCurrentProgram(); }
+    void setCurrentProgram (int index) override { presets.setCurrentProgram (index); }
+    const juce::String getProgramName (int index) override { return presets.getProgramName (index); }
     void changeProgramName (int, const juce::String&) override {}
 
     void getStateInformation (juce::MemoryBlock& destData) override
     {
-        auto state = apvts.copyState();
-        if (auto xml = state.createXml())
+        if (auto xml = createStateXml())
             copyXmlToBinary (*xml, destData);
     }
     void setStateInformation (const void* data, int sizeInBytes) override
     {
         if (auto xml = getXmlFromBinary (data, sizeInBytes))
             if (xml->hasTagName (apvts.state.getType()))
+            {
+                auto presetInfo = presets.extractState (*xml);
                 apvts.replaceState (juce::ValueTree::fromXml (*xml));
+                presets.restoreState (presetInfo.get());
+            }
+    }
+
+    // Parameters + current preset, as saved in the project
+    std::unique_ptr<juce::XmlElement> createStateXml()
+    {
+        auto xml = apvts.copyState().createXml();
+        if (xml != nullptr)
+            presets.writeState (*xml);
+        return xml;
     }
 
     juce::AudioProcessorParameter* getBypassParameter() const override { return apvts.getParameter ("bypass"); }

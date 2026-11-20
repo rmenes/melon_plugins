@@ -1,5 +1,6 @@
 #include "PluginProcessor.h"
 #include "PluginEditor.h"
+#include "FactoryPresets.h"
 
 GraphicEqProcessor::GraphicEqProcessor()
     : AudioProcessor (BusesProperties()
@@ -7,6 +8,8 @@ GraphicEqProcessor::GraphicEqProcessor()
                           .withOutput ("Output", juce::AudioChannelSet::stereo(), true)),
       apvts (*this, nullptr, "PARAMETERS", createParameterLayout())
 {
+    presets.setFactoryPresets (geq::factoryPresets());
+
     modeParam    = apvts.getRawParameterValue ("mode");
     preciseParam = apvts.getRawParameterValue ("precise");
     outputParam  = apvts.getRawParameterValue ("output");
@@ -124,16 +127,22 @@ juce::AudioProcessorParameter* GraphicEqProcessor::getBypassParameter() const
 
 void GraphicEqProcessor::getStateInformation (juce::MemoryBlock& destData)
 {
-    auto state = apvts.copyState();
-    if (auto xml = state.createXml())
+    if (auto xml = apvts.copyState().createXml())
+    {
+        presets.writeState (*xml);
         copyXmlToBinary (*xml, destData);
+    }
 }
 
 void GraphicEqProcessor::setStateInformation (const void* data, int sizeInBytes)
 {
     if (auto xml = getXmlFromBinary (data, sizeInBytes))
         if (xml->hasTagName (apvts.state.getType()))
+        {
+            auto presetInfo = presets.extractState (*xml);
             apvts.replaceState (juce::ValueTree::fromXml (*xml));
+            presets.restoreState (presetInfo.get());
+        }
 }
 
 juce::AudioProcessorEditor* GraphicEqProcessor::createEditor()

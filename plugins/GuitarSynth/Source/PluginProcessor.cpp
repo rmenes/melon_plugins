@@ -1,5 +1,6 @@
 #include "PluginProcessor.h"
 #include "PluginEditor.h"
+#include "FactoryPresets.h"
 
 GuitarSynthProcessor::GuitarSynthProcessor()
     : AudioProcessor (BusesProperties()
@@ -7,6 +8,8 @@ GuitarSynthProcessor::GuitarSynthProcessor()
                           .withOutput ("Output", juce::AudioChannelSet::stereo(), true)),
       apvts (*this, nullptr, "PARAMETERS", createParameterLayout())
 {
+    presets.setFactoryPresets (gsynth::factoryPresets());
+
     triggerParam   = apvts.getRawParameterValue ("trigger");
     subParam       = apvts.getRawParameterValue ("suboctave");
     guitarParam    = apvts.getRawParameterValue ("guitar");
@@ -185,16 +188,22 @@ juce::AudioProcessorParameter* GuitarSynthProcessor::getBypassParameter() const
 
 void GuitarSynthProcessor::getStateInformation (juce::MemoryBlock& destData)
 {
-    auto state = apvts.copyState();
-    if (auto xml = state.createXml())
+    if (auto xml = apvts.copyState().createXml())
+    {
+        presets.writeState (*xml);
         copyXmlToBinary (*xml, destData);
+    }
 }
 
 void GuitarSynthProcessor::setStateInformation (const void* data, int sizeInBytes)
 {
     if (auto xml = getXmlFromBinary (data, sizeInBytes))
         if (xml->hasTagName (apvts.state.getType()))
+        {
+            auto presetInfo = presets.extractState (*xml);
             apvts.replaceState (juce::ValueTree::fromXml (*xml));
+            presets.restoreState (presetInfo.get());
+        }
 }
 
 juce::AudioProcessorEditor* GuitarSynthProcessor::createEditor()

@@ -200,6 +200,8 @@ GraphicEqEditor::GraphicEqEditor (GraphicEqProcessor& p)
     outputLabel.setJustificationType (juce::Justification::centredRight);
     addAndMakeVisible (outputLabel);
 
+    addAndMakeVisible (presetBar);
+
     addAndMakeVisible (curve);
 
     for (int n : { 10, 31 })
@@ -230,8 +232,8 @@ GraphicEqEditor::GraphicEqEditor (GraphicEqProcessor& p)
     }
 
     setResizable (true, true);
-    setResizeLimits (860, 450, 1800, 1000);
-    setSize (1000, 550);
+    setResizeLimits (860, 486, 1800, 1036);
+    setSize (1000, 586);
 
     updateVisibleBands();
     updateCurve();
@@ -279,6 +281,8 @@ void GraphicEqEditor::resized()
     outputSlider.setBounds (header.removeFromRight (190));
     outputLabel.setBounds (header.removeFromRight (50));
 
+    area.removeFromTop (8);
+    presetBar.setBounds (area.removeFromTop (28));
     area.removeFromTop (10);
     curve.setBounds (area.removeFromTop (juce::jmax (120, area.getHeight() * 2 / 5)));
     area.removeFromTop (10);

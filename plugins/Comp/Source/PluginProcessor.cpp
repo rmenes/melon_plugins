@@ -1,7 +1,11 @@
 #include "PluginProcessor.h"
 #include "PluginEditor.h"
+#include "FactoryPresets.h"
 
-CompProcessor::CompProcessor() : ProcessorBase (createParameterLayout(), 0.5) {}
+CompProcessor::CompProcessor() : ProcessorBase (createParameterLayout(), 0.5)
+{
+    presets.setFactoryPresets (comp::factoryPresets());
+}
 
 melon::params::Layout CompProcessor::createParameterLayout()
 {

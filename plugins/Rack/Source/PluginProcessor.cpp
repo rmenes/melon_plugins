@@ -1,5 +1,6 @@
 #include "PluginProcessor.h"
 #include "PluginEditor.h"
+#include "FactoryPresets.h"
 #include <juce_audio_formats/juce_audio_formats.h>
 
 const juce::String RackProcessor::modelWildcard = "*.nam;*.json;*.aidax";
@@ -26,6 +27,31 @@ juce::String rateText (double hz)
 RackProcessor::RackProcessor() : ProcessorBase (createParameterLayout(), 0.5)
 {
     lastModelFolder = lastIrFolder = juce::File::getSpecialLocation (juce::File::userDocumentsDirectory);
+
+    // Factory presets only set the controls and keep the loaded models / IRs.
+    // User presets also remember the model and IR files.
+    presets.setFactoryPresets (rack::factoryPresets());
+    presets.writeExtras = [this] (juce::XmlElement& xml) {
+        for (int s = 0; s < kNumModels; ++s)
+            xml.setAttribute (kModelProps[s], modelStatus (s).file.getFullPathName());
+        for (int s = 0; s < kNumIrs; ++s)
+            xml.setAttribute (kIrProps[s], irStatus (s).file.getFullPathName());
+    };
+    presets.readExtras = [this] (const juce::XmlElement& xml) {
+        auto apply = [&xml] (const char* prop, auto load, auto clear) {
+            if (! xml.hasAttribute (prop))
+                return; // preset saved without this slot: leave it as it is
+            const auto path = xml.getStringAttribute (prop);
+            if (path.isNotEmpty() && juce::File::isAbsolutePath (path) && juce::File (path).existsAsFile())
+                load (juce::File (path));
+            else if (path.isEmpty())
+                clear();
+        };
+        for (int s = 0; s < kNumModels; ++s)
+            apply (kModelProps[s], [this, s] (const juce::File& f) { loadModel (s, f); }, [this, s] { clearModel (s); });
+        for (int s = 0; s < kNumIrs; ++s)
+            apply (kIrProps[s], [this, s] (const juce::File& f) { loadIr (s, f); }, [this, s] { clearIr (s); });
+    };
 }
 
 RackProcessor::~RackProcessor()
@@ -425,13 +451,14 @@ RackProcessor::SlotStatus RackProcessor::irStatus (int s) const
 // The file paths are stored with the parameters, so projects and presets reload them.
 void RackProcessor::getStateInformation (juce::MemoryBlock& destData)
 {
-    auto state = apvts.copyState();
-    for (int s = 0; s < kNumModels; ++s)
-        state.setProperty (kModelProps[s], modelStatus (s).file.getFullPathName(), nullptr);
-    for (int s = 0; s < kNumIrs; ++s)
-        state.setProperty (kIrProps[s], irStatus (s).file.getFullPathName(), nullptr);
-    if (auto xml = state.createXml())
+    if (auto xml = createStateXml())
+    {
+        for (int s = 0; s < kNumModels; ++s)
+            xml->setAttribute (kModelProps[s], modelStatus (s).file.getFullPathName());
+        for (int s = 0; s < kNumIrs; ++s)
+            xml->setAttribute (kIrProps[s], irStatus (s).file.getFullPathName());
         copyXmlToBinary (*xml, destData);
+    }
 }
 
 void RackProcessor::setStateInformation (const void* data, int sizeInBytes)
