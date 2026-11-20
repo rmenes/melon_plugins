@@ -7,22 +7,23 @@ All plugins share the same identity (manufacturer **Melon**) and the same build 
 
 ## Plugins
 
-| Plugin | Type | Folder | Status |
-|---|---|---|---|
-| **Melon GraphicEQ** | 10/31-band graphic equalizer | `plugins/GraphicEQ` | v1.0.0 |
-| **Melon Chorus** | Stereo guitar chorus (Rate, Depth, Width, Mix, Tone) | `plugins/Chorus` | v1.0.0 |
-| **Melon Flanger** | MXR M117R-style flanger (Manual, Width, Speed, Regen, Mix) | `plugins/Flanger` | v1.0.0 |
-| **Melon Guitar Synth** | EHX Micro Synthesizer-style guitar synth (4 voices, Attack Delay, swept resonant filter) | `plugins/GuitarSynth` | v1.0.0 |
-| **Melon Dirt** | 11 classic overdrive voicings (TS808, TS9, SD-1, Angry Charlie, RAT, BE-OD, Klon, Morning Glory, BD-1, OCD, ODR-1 styles) | `plugins/Dirt` | v1.0.0 |
-| **Melon Muffs** | Six Big Muff Pi versions (Triangle, Ram's Head, Op-Amp, Russian Civil War, NYC, Pi 2) | `plugins/Muffs` | v1.0.0 |
-| **Melon Gates of Doom** | Pro-G-style gate / expander / ducker with lookahead and side-chain filters | `plugins/GatesOfDoom` | v1.0.0 |
-| **Melon Reverberare** | BigSky-style multi-machine reverb (12 machines, Infinite) | `plugins/Reverberare` | v1.0.0 |
-| **Melon Delay 2290** | TC 2290-style digital delay (tap, sync, modulation, dynamic delay) | `plugins/Delay2290` | v1.0.0 |
-| **Melon Rack** | Neural amp model loader (NAM / AIDA-X) with gate, EQ and stereo IR cabinet, after NeuralRack | `plugins/Rack` | v1.0.0 |
-| **Melon Comp** | Keeley Compressor Plus-style guitar compressor (Sustain, Level, Blend, Tone, Single Coil/Humbucker release) | `plugins/Comp` | v1.0.0 |
-| **Melon Pro EQ** | Pro-Q-style 24-band parametric EQ (analyzer, dynamic EQ, Mid/Side, Linear Phase, slopes up to 96 dB/oct) | `plugins/ProEQ` | v1.0.0 |
-| **Melon Shifter** | Harmonizer-style dual-voice pitch shifter (±24 semitones, detune, delay with climbing feedback) | `plugins/Shifter` | v1.0.0 |
+| Plugin | Type | Folder |
+|---|---|---|
+| **Melon GraphicEQ** | 10/31-band graphic equalizer | `plugins/GraphicEQ` |
+| **Melon Chorus** | Stereo guitar chorus (Rate, Depth, Width, Mix, Tone) | `plugins/Chorus` |
+| **Melon Flanger** | MXR M117R-style flanger (Manual, Width, Speed, Regen, Mix) | `plugins/Flanger` |
+| **Melon Guitar Synth** | EHX Micro Synthesizer-style guitar synth (4 voices, Attack Delay, swept resonant filter) | `plugins/GuitarSynth` |
+| **Melon Dirt** | 11 classic overdrive voicings (TS808, TS9, SD-1, Angry Charlie, RAT, BE-OD, Klon, Morning Glory, BD-1, OCD, ODR-1 styles) | `plugins/Dirt` |
+| **Melon Muffs** | Six Big Muff Pi versions (Triangle, Ram's Head, Op-Amp, Russian Civil War, NYC, Pi 2) | `plugins/Muffs` |
+| **Melon Gates of Doom** | Pro-G-style gate / expander / ducker with lookahead and side-chain filters | `plugins/GatesOfDoom` |
+| **Melon Reverberare** | BigSky-style multi-machine reverb (12 machines, Infinite) | `plugins/Reverberare` |
+| **Melon Delay 2290** | TC 2290-style digital delay (tap, sync, modulation, dynamic delay) | `plugins/Delay2290` |
+| **Melon Rack** | Neural amp model loader (NAM / AIDA-X) with gate, EQ and stereo IR cabinet, after NeuralRack | `plugins/Rack` |
+| **Melon Comp** | Keeley Compressor Plus-style guitar compressor (Sustain, Level, Blend, Tone, Single Coil/Humbucker release) | `plugins/Comp` |
+| **Melon Pro EQ** | Pro-Q-style 24-band parametric EQ (analyzer, dynamic EQ, Mid/Side, Linear Phase, slopes up to 96 dB/oct) | `plugins/ProEQ` |
+| **Melon Shifter** | Harmonizer-style dual-voice pitch shifter (±24 semitones, detune, delay with climbing feedback) | `plugins/Shifter` |
 
+All plugins share one version number, currently **1.2.0** (set once in `MELON_VERSION`, `cmake/MelonCommon.cmake`), shown as small text under each plugin's title.
 The full list of plugin codes and identifiers is in [`docs/PLUGIN_REGISTRY.md`](docs/PLUGIN_REGISTRY.md).
 
 ## Presets
@@ -159,6 +160,7 @@ To distribute them to other people without that step, they need to be signed and
 | `JUCE_DIR` | empty | Uses a local copy of JUCE instead of downloading it. |
 | `NEURALAUDIO_DIR` | empty | Melon Rack only: uses a local clone of [NeuralAudio](https://github.com/mikeoliphant/NeuralAudio) (cloned with `--recurse-submodules`) instead of downloading it. |
 | `NEURALAUDIO_TAG` | `main` | Melon Rack only: NeuralAudio branch, tag or commit to download. |
+| `MELON_TONE3000_CLIENT_ID` | the series' key | Melon Rack only: TONE3000 publishable API key used for sign-in and downloads. |
 
 Example: `cmake -B build -A x64 "-DMELON_FORMATS=VST3"`
 
