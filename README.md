@@ -21,6 +21,7 @@ All plugins share the same identity (manufacturer **Melon**) and the same build 
 | **Melon Rack** | Neural amp model loader (NAM / AIDA-X) with gate, EQ and stereo IR cabinet, after NeuralRack | `plugins/Rack` | v1.0.0 |
 | **Melon Comp** | Keeley Compressor Plus-style guitar compressor (Sustain, Level, Blend, Tone, Single Coil/Humbucker release) | `plugins/Comp` | v1.0.0 |
 | **Melon Pro EQ** | Pro-Q-style 24-band parametric EQ (analyzer, dynamic EQ, Mid/Side, Linear Phase, slopes up to 96 dB/oct) | `plugins/ProEQ` | v1.0.0 |
+| **Melon Shifter** | Harmonizer-style dual-voice pitch shifter (±24 semitones, detune, delay with climbing feedback) | `plugins/Shifter` | v1.0.0 |
 
 The full list of plugin codes and identifiers is in [`docs/PLUGIN_REGISTRY.md`](docs/PLUGIN_REGISTRY.md).
 
@@ -47,7 +48,8 @@ melon_plugins/
 │   ├── Delay2290/
 │   ├── Rack/
 │   ├── Comp/
-│   └── ProEQ/
+│   ├── ProEQ/
+│   └── Shifter/
 ├── shared/                   ← code shared by the newer plugins (DSP blocks, base classes, test helpers)
 ├── docs/
 │   ├── NEW_PLUGIN.md         ← step-by-step guide to creating a new plugin

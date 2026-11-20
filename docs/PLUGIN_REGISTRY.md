@@ -26,6 +26,7 @@ Every plugin needs **unique, permanent** identifiers. DAWs use them to recognise
 | Melon Rack | `Rack` | `Rck1` | `https://github.com/melon-audio/melon-rack` | 1.1.0 |
 | Melon Comp | `Comp` | `Cmp1` | `https://github.com/melon-audio/melon-comp` | 1.1.0 |
 | Melon Pro EQ | `ProEQ` | `Peq1` | `https://github.com/melon-audio/melon-proeq` | 1.1.0 |
+| Melon Shifter | `Shifter` | `Shf1` | `https://github.com/melon-audio/melon-shifter` | 1.1.0 |
 
 ## Rules
 
