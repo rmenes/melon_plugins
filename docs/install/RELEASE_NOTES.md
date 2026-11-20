@@ -1,4 +1,19 @@
-## What's new in 1.1.0
+## What's new in 1.2.0
+
+### New plugin: Melon Shifter
+- A dual-voice pitch shifter: two voices shifting up to ±24 semitones each, with detune, delay and climbing feedback for cascading harmonies.
+- 10 factory presets and the same preset menu as the rest of the series.
+
+### Raspberry Pi / ARM Linux
+- New download: **`Melon-Plugins-…-Linux-arm64.zip`**, the LV2 versions of every plugin for 64-bit ARM Linux, such as a Raspberry Pi 4 or 5 with Raspberry Pi OS (64-bit). See its `INSTALL.txt` for setup and performance tips.
+
+### Other changes
+- Every plugin now shows **v1.2.0**.
+
+**Your projects:** sessions and presets saved with 1.0.x or 1.1.0 open in 1.2.0 with the same settings.
+
+<details>
+<summary>What was new in 1.1.0</summary>
 
 ### Presets in every plugin
 - A new preset row under each plugin's header: **Preset [<] [name] [>] [Save] [Save As]**. Click the name for the full menu (factory presets, your presets, Save, Save As, Delete, Reset to Default, Open Preset Folder).
@@ -21,6 +36,8 @@
 
 **Your projects:** sessions saved with 1.0.0 open in 1.1.0 with the same settings. The preset name shows as "Default *".
 
+</details>
+
 ## Downloads
 
 Pick the zip for your system under **Assets** below:
@@ -30,6 +47,7 @@ Pick the zip for your system under **Assets** below:
 | **Windows** (64-bit) | `Melon-Plugins-…-Windows.zip` | VST3, Standalone |
 | **macOS** (Apple Silicon + Intel) | `Melon-Plugins-…-macOS.zip` | VST3, AU, Standalone |
 | **Linux** (x86_64) | `Melon-Plugins-…-Linux.zip` | LV2, VST3, Standalone |
+| **Linux arm64** (Raspberry Pi 4/5, 64-bit OS) | `Melon-Plugins-…-Linux-arm64.zip` | LV2 |
 
 Each zip has an `INSTALL.txt` with step-by-step instructions.
 

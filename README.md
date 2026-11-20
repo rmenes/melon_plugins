@@ -2,7 +2,7 @@
 
 # Melon Plugins
 
-A series of **VST3** (Windows/Linux) and **LV2** (Linux) audio plugins built with [JUCE](https://juce.com).
+A series of **VST3** (Windows/Linux) and **LV2** (Linux x86_64 and arm64, e.g. Raspberry Pi) audio plugins built with [JUCE](https://juce.com).
 All plugins share the same identity (manufacturer **Melon**) and the same build setup. JUCE is downloaded only once for the whole series.
 
 ## Plugins
@@ -113,9 +113,11 @@ cmake --build build -j$(nproc)
 
 To install, copy the `.lv2` folders to `~/.lv2/` and the `.vst3` folders to `~/.vst3/`.
 
+The same steps work on a 64-bit ARM board (e.g. Raspberry Pi 4/5 with 64-bit Raspberry Pi OS); add `-DMELON_FORMATS=LV2` to build only the LV2s. Compiling the whole series on a Pi is slow; the release zips already include ready-made arm64 LV2s.
+
 ## Downloads and automatic builds (GitHub Actions)
 
-**Ready-to-install plugins are on the [Releases page](https://github.com/rmenes/melon_plugins/releases):** one zip per system (Windows, macOS, Linux), each with an `INSTALL.txt`.
+**Ready-to-install plugins are on the [Releases page](https://github.com/rmenes/melon_plugins/releases):** one zip per system (Windows, macOS, Linux x86_64, Linux arm64), each with an `INSTALL.txt`.
 
 The build is defined in `.github/workflows/build.yml` (copy in `docs/github-actions-build.yml`). It builds the whole series on GitHub's machines and runs the tests:
 
@@ -124,15 +126,16 @@ The build is defined in `.github/workflows/build.yml` (copy in `docs/github-acti
 | Windows | VST3, Standalone | x64 |
 | macOS | VST3, AU, Standalone | Universal (Apple Silicon + Intel), macOS 10.15 or newer; AUs are checked with `auval` |
 | Linux | LV2, VST3, Standalone | x64 |
+| Linux arm64 | LV2 | aarch64 (Raspberry Pi 4/5 with a 64-bit OS), built natively on GitHub's `ubuntu-22.04-arm` runner |
 
 ### Publishing a new release
 
 1. On GitHub, open **Releases → Draft a new release**.
-2. Under **Choose a tag**, type a new version (for example `v1.1.0`) and pick **Create new tag on publish**.
-3. Give it a title (for example `Melon Plugins 1.1.0`). Leave the description empty to get the standard plugin list and install notes, or write your own.
+2. Under **Choose a tag**, type a new version (for example `v1.2.0`) and pick **Create new tag on publish**.
+3. Give it a title (for example `Melon Plugins 1.2.0`). Leave the description empty to get the standard plugin list and install notes, or write your own.
 4. Click **Publish release**.
 
-GitHub then builds all three systems (about 40 minutes) and attaches `Melon-Plugins-v1.1.0-Windows.zip`, `-macOS.zip` and `-Linux.zip` to the release.
+GitHub then builds all four systems (about 40 minutes) and attaches `Melon-Plugins-v1.2.0-Windows.zip`, `-macOS.zip`, `-Linux.zip` and `-Linux-arm64.zip` to the release. Before tagging, bump `MELON_VERSION` in `cmake/MelonCommon.cmake` so the plugins show the same version.
 
 Every ordinary push is also built and tested; those zips are under **Actions → (run) → Artifacts** (kept for 90 days). `builds/` is in `.gitignore`: compiled plugins come from GitHub, so they don't need to be in the repository.
 
