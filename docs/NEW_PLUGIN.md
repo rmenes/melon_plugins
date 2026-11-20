@@ -37,10 +37,11 @@ plugins/Compressor/
 Change the project name, the target, `PRODUCT_NAME`, `PLUGIN_CODE`, `VST3_CATEGORIES` and `LV2URI`:
 
 ```cmake
-project(MelonCompressor VERSION 1.0.0 LANGUAGES C CXX)
+project(MelonCompressor LANGUAGES C CXX)
 include(${CMAKE_CURRENT_LIST_DIR}/../../cmake/MelonCommon.cmake)
 
 juce_add_plugin(Compressor
+    VERSION                   ${MELON_VERSION}
     COMPANY_NAME              "${MELON_COMPANY_NAME}"
     PLUGIN_MANUFACTURER_CODE  ${MELON_MANUFACTURER_CODE}
     PRODUCT_NAME              "Melon Compressor"

@@ -3,6 +3,7 @@
 #include <juce_audio_processors/juce_audio_processors.h>
 #include "PluginProcessor.h"
 #include <MelonPresets.h>
+#include <MelonVersion.h>
 
 //==============================================================================
 class GuitarSynthLookAndFeel : public juce::LookAndFeel_V4
@@ -67,7 +68,7 @@ private:
     juce::Rectangle<int> logoBounds, faderPanel;
     juce::Rectangle<int> voiceCaption, filterCaption;  // section titles above the fader groups
     std::vector<int>     dividers;                     // x positions of the lines between sections
-    juce::Label          titleLabel;
+    juce::Label          titleLabel, versionLabel;
     juce::ToggleButton   bypassButton { "Bypass" };
     juce::Slider         outputSlider;
     juce::Label          outputLabel;

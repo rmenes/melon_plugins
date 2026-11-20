@@ -1,10 +1,11 @@
 cmake_minimum_required(VERSION 3.22)
 
-project(MelonProEQ VERSION 1.0.0 LANGUAGES C CXX)
+project(MelonProEQ LANGUAGES C CXX)
 
 include(${CMAKE_CURRENT_LIST_DIR}/../../cmake/MelonCommon.cmake)
 
 juce_add_plugin(ProEQ
+    VERSION                   ${MELON_VERSION}
     COMPANY_NAME              "${MELON_COMPANY_NAME}"
     PLUGIN_MANUFACTURER_CODE  ${MELON_MANUFACTURER_CODE}
     PRODUCT_NAME              "Melon Pro EQ"

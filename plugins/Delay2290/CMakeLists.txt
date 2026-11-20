@@ -1,10 +1,11 @@
 cmake_minimum_required(VERSION 3.22)
 
-project(MelonDelay2290 VERSION 1.0.0 LANGUAGES C CXX)
+project(MelonDelay2290 LANGUAGES C CXX)
 
 include(${CMAKE_CURRENT_LIST_DIR}/../../cmake/MelonCommon.cmake)
 
 juce_add_plugin(Delay2290
+    VERSION                   ${MELON_VERSION}
     COMPANY_NAME              "${MELON_COMPANY_NAME}"
     PLUGIN_MANUFACTURER_CODE  ${MELON_MANUFACTURER_CODE}
     PRODUCT_NAME              "Melon Delay 2290"

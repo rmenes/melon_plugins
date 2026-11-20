@@ -16,6 +16,7 @@
 #include <juce_audio_processors/juce_audio_processors.h>
 #include <MelonBranding.h>
 #include "MelonPresets.h"
+#include "MelonVersion.h"
 
 namespace melon
 {
@@ -139,6 +140,8 @@ public:
         titleLabel.setFont (juce::FontOptions (20.0f, juce::Font::bold));
         titleLabel.setColour (juce::Label::textColourId, colours::text);
         addAndMakeVisible (titleLabel);
+        setUpVersionLabel (versionLabel);
+        addAndMakeVisible (versionLabel);
 
         addAndMakeVisible (bypassButton);
         bypassAttachment = std::make_unique<ButtonAttachment> (processor.apvts, "bypass", bypassButton);
@@ -186,7 +189,7 @@ public:
         const int logoW = logo.isValid() ? juce::roundToInt (40.0f * (float) logo.getWidth() / (float) logo.getHeight()) : 0;
         logoBounds = header.removeFromLeft (logoW);
         header.removeFromLeft (20);
-        titleLabel.setBounds (header.removeFromLeft (titleWidth));
+        layoutTitle (header.removeFromLeft (titleWidth), titleLabel, versionLabel);
         header = header.reduced (0, 4);
         bypassButton.setBounds (header.removeFromLeft (90));
         outputSlider.setBounds (header.removeFromRight (190));
@@ -395,7 +398,7 @@ private:
 
     juce::Image          logo;
     juce::Rectangle<int> logoBounds, knobPanel;
-    juce::Label          titleLabel;
+    juce::Label          titleLabel, versionLabel;
     juce::ToggleButton   bypassButton { "Bypass" };
     juce::Slider         outputSlider;
     juce::Label          outputLabel;

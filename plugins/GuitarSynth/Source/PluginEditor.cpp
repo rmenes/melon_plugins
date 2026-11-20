@@ -273,6 +273,8 @@ GuitarSynthEditor::GuitarSynthEditor (GuitarSynthProcessor& p)
     titleLabel.setFont (juce::FontOptions (20.0f, juce::Font::bold));
     titleLabel.setColour (juce::Label::textColourId, colours::text);
     addAndMakeVisible (titleLabel);
+    melon::setUpVersionLabel (versionLabel);
+    addAndMakeVisible (versionLabel);
 
     addAndMakeVisible (bypassButton);
     bypassAttachment = std::make_unique<ButtonAttachment> (processor.apvts, "bypass", bypassButton);
@@ -394,7 +396,7 @@ void GuitarSynthEditor::resized()
     const int logoW = logo.isValid() ? juce::roundToInt (40.0f * (float) logo.getWidth() / (float) logo.getHeight()) : 0;
     logoBounds = header.removeFromLeft (logoW);
     header.removeFromLeft (20);
-    titleLabel.setBounds (header.removeFromLeft (140));
+    melon::layoutTitle (header.removeFromLeft (140), titleLabel, versionLabel);
     header = header.reduced (0, 4);
     bypassButton.setBounds (header.removeFromLeft (90));
     outputSlider.setBounds (header.removeFromRight (190));
