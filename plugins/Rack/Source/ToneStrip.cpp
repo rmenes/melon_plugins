@@ -199,15 +199,31 @@ void ToneStrip::refresh()
         rebuildChips();
     }
 
-    if (processor.toneStatusCounter() != shownStatus)
-    {
-        shownStatus = processor.toneStatusCounter();
-        status.setText (processor.toneStatus(), juce::dontSendNotification);
-    }
-
     const bool configured = t3k::Client::isConfigured();
     const bool busy       = processor.isLoadingTones();
     const auto user       = processor.tone3000.getUserName();
+    const bool signedIn   = configured && processor.tone3000.isSignedIn();
+
+    if (processor.toneStatusCounter() != shownStatus)
+    {
+        shownStatus = processor.toneStatusCounter();
+        localStatus = false;
+        status.setText (processor.toneStatus(), juce::dontSendNotification);
+    }
+    if (shownStatus == 0 && ! localStatus) // nothing happened yet: show how it works
+    {
+        juce::String hint;
+        if (! configured)
+            hint = "Click a suggestion to open it on tone3000.com.";
+        else if (! signedIn)
+            hint = "Sign in, then click a suggestion to load it straight into the rack. "
+                   "Files downloaded on the website do not load by themselves.";
+        else if (suggestions != nullptr)
+            hint = "Click a suggestion to load it, or Load suggested tones for the whole set. "
+                   "\"...\" shows the other captures.";
+        if (status.getText() != hint)
+            status.setText (hint, juce::dontSendNotification);
+    }
 
     juce::String accountText = "Sign in";
     if (configured && processor.tone3000.isSignedIn())
@@ -217,13 +233,21 @@ void ToneStrip::refresh()
     account.setTooltip (configured ? "Your TONE3000 account" : "TONE3000 sign-in is not set up in this build");
 
     loadAll.setEnabled (suggestions != nullptr && configured && ! busy);
-    for (auto& chip : chips)
-        chip->setEnabled (! busy);
+    for (auto* list : { &chips, &chipMenus })
+        for (auto& b : *list)
+            b->setEnabled (! busy);
+}
+
+void ToneStrip::setLocalStatus (const juce::String& text)
+{
+    localStatus = true;
+    status.setText (text, juce::dontSendNotification);
 }
 
 void ToneStrip::rebuildChips()
 {
     chips.clear();
+    chipMenus.clear();
     if (suggestions != nullptr)
     {
         heading.setText ("Suggested:", juce::dontSendNotification);
@@ -231,9 +255,16 @@ void ToneStrip::rebuildChips()
         {
             const auto& s = (*suggestions)[i];
             auto& chip    = *chips.emplace_back (std::make_unique<juce::TextButton> (juce::String (rack::slotName (s.slot)) + ": " + s.title));
-            chip.setTooltip (s.title + byCreator (s.creator) + " on TONE3000 - click to open or load it");
-            chip.onClick = [this, i] { showToneMenu (i); };
+            chip.setTooltip (t3k::Client::isConfigured()
+                                 ? "Load " + s.title + byCreator (s.creator) + " from TONE3000 into the " + rack::slotName (s.slot) + " slot"
+                                 : "Open " + s.title + byCreator (s.creator) + " on tone3000.com");
+            chip.onClick = [this, i] { loadOne (i); };
             addAndMakeVisible (chip);
+
+            auto& more = *chipMenus.emplace_back (std::make_unique<juce::TextButton> ("..."));
+            more.setTooltip ("More: choose another capture, or view it on the website");
+            more.onClick = [this, i] { showToneMenu (i); };
+            addAndMakeVisible (more);
         }
     }
     else
@@ -287,9 +318,12 @@ void ToneStrip::resized()
     heading.setBounds (row.removeFromLeft (76));
     const int n = (int) chips.size();
     const int w = juce::jmin (280, (row.getWidth() - 6 * (n - 1)) / n);
-    for (auto& chip : chips)
+    for (size_t i = 0; i < chips.size(); ++i)
     {
-        chip->setBounds (row.removeFromLeft (w));
+        auto cell = row.removeFromLeft (w);
+        chipMenus[i]->setBounds (cell.removeFromRight (26));
+        cell.removeFromRight (2);
+        chips[i]->setBounds (cell);
         row.removeFromLeft (6);
     }
 }
@@ -305,14 +339,15 @@ void ToneStrip::showToneMenu (size_t index)
 
     juce::PopupMenu m;
     m.addSectionHeader (s.title + byCreator (s.creator));
-    m.addItem (1, "Open on TONE3000");
     m.addItem (2, "Load into " + juce::String (rack::slotName (s.slot)), configured && ! busy);
     m.addItem (3, "Choose another capture...", configured && ! busy);
     if (! configured)
         m.addItem (4, "(Loading needs a TONE3000 key in this build)", false);
+    m.addSeparator();
+    m.addItem (1, "View on the website only (files do not load into the rack)");
 
     juce::Component::SafePointer<ToneStrip> safe (this);
-    m.showMenuAsync (juce::PopupMenu::Options().withTargetComponent (chips[index].get()), [safe, s] (int r) {
+    m.showMenuAsync (juce::PopupMenu::Options().withTargetComponent (chipMenus[index].get()), [safe, s] (int r) {
         if (safe == nullptr || r == 0)
             return;
         if (r == 1)
@@ -333,16 +368,35 @@ void ToneStrip::showToneMenu (size_t index)
     });
 }
 
+void ToneStrip::loadOne (size_t index)
+{
+    if (suggestions == nullptr || index >= suggestions->size() || processor.isLoadingTones())
+        return;
+    const auto s = (*suggestions)[index];
+
+    if (! t3k::Client::isConfigured()) // this build cannot download: the website is all we have
+        return openInBrowser (s.url);
+
+    if (processor.tone3000.isSignedIn())
+        return processor.loadTones ({ s }, false);
+
+    juce::Component::SafePointer<ToneStrip> safe (this);
+    openSignIn ([safe, s] {
+        if (safe != nullptr)
+            safe->processor.loadTones ({ s }, false);
+    });
+}
+
 void ToneStrip::chooseCapture (const rack::ToneSuggestion& s)
 {
-    status.setText ("TONE3000: getting the captures of " + s.title + "...", juce::dontSendNotification);
+    setLocalStatus ("TONE3000: getting the captures of " + s.title + "...");
     juce::Component::SafePointer<ToneStrip> safe (this);
     processor.tone3000.fetchTone (s.toneId, [safe, s] (juce::Result r, const t3k::Tone& tone) {
         if (safe == nullptr)
             return;
         if (r.failed())
-            return safe->status.setText (r.getErrorMessage(), juce::dontSendNotification);
-        safe->status.setText ({}, juce::dontSendNotification);
+            return safe->setLocalStatus (r.getErrorMessage());
+        safe->setLocalStatus ({});
 
         juce::PopupMenu m;
         m.addSectionHeader ((tone.title.isNotEmpty() ? tone.title : s.title) + byCreator (tone.creator.isNotEmpty() ? tone.creator : s.creator));
@@ -375,8 +429,7 @@ void ToneStrip::showAccountMenu()
 {
     if (! t3k::Client::isConfigured())
     {
-        status.setText ("This build of Melon Rack has no TONE3000 key, so it can only open tones in the browser.",
-                        juce::dontSendNotification);
+        setLocalStatus ("This build of Melon Rack has no TONE3000 key, so it can only open tones in the browser.");
         return;
     }
     if (! processor.tone3000.isSignedIn())
@@ -405,7 +458,7 @@ void ToneStrip::showAccountMenu()
         else if (r == 3)
         {
             safe->processor.tone3000.signOut();
-            safe->status.setText ("Signed out of TONE3000.", juce::dontSendNotification);
+            safe->setLocalStatus ("Signed out of TONE3000.");
         }
     });
 }
