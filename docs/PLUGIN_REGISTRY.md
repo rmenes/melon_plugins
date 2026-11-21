@@ -30,6 +30,8 @@ Every plugin needs **unique, permanent** identifiers. DAWs use them to recognise
 | Melon Tuner | `Tuner` | `Tun1` | `https://github.com/melon-audio/melon-tuner` | 1.2.1 |
 | Melon Simple Gate | `SimpleGate` | `Sgt1` | `https://github.com/melon-audio/melon-simplegate` | 1.2.1 |
 | Melon Multi Delay | `MultiDelay` | `Mdl1` | `https://github.com/melon-audio/melon-multidelay` | 1.2.1 |
+| Melon NAM | `Nam` | `Nam1` | `https://github.com/melon-audio/melon-nam` | 1.2.1 |
+| Melon Cab | `Cab` | `Cab1` | `https://github.com/melon-audio/melon-cab` | 1.2.1 |
 
 ## Rules
 
