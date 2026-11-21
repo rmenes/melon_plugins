@@ -26,7 +26,7 @@ All plugins share the same identity (manufacturer **Melon**) and the same build 
 | **Melon Simple Gate** | Zuul+-style noise gate for guitar and bass (Threshold, Hold, Release, Guitar/Bass voicing) | `plugins/SimpleGate` |
 | **Melon Multi Delay** | TimeLine-style multi-machine delay (12 machines: tape, analog, dual, pattern, reverse, ice, swell, lo-fi… plus sync, tap, Infinite, Trails) | `plugins/MultiDelay` |
 
-All plugins share one version number, currently **1.2.0** (set once in `MELON_VERSION`, `cmake/MelonCommon.cmake`), shown as small text under each plugin's title.
+All plugins share one version number, currently **1.2.1** (set once in `MELON_VERSION`, `cmake/MelonCommon.cmake`), shown as small text under each plugin's title.
 The full list of plugin codes and identifiers is in [`docs/PLUGIN_REGISTRY.md`](docs/PLUGIN_REGISTRY.md).
 
 ## Presets
