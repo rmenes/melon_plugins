@@ -74,3 +74,6 @@ xattr -cr ~/Library/Audio/Plug-Ins/VST3/Melon*.vst3 ~/Library/Audio/Plug-Ins/Com
 | **Melon Comp** | Keeley Compressor Plus-style compressor with Blend, Tone and Single Coil / Humbucker release |
 | **Melon Pro EQ** | 24-band parametric EQ with analyzer, dynamic EQ, Mid/Side and Linear Phase |
 | **Melon Shifter** | Dual-voice pitch shifter (±24 semitones) with detune, delay and climbing feedback |
+| **Melon Tuner** | Guitar and bass tuner: chromatic or 14 guitar/bass tunings, needle or strobe, adjustable A4, mute |
+| **Melon Simple Gate** | Pedal-style noise gate for guitar and bass (Threshold, Hold, Release, Guitar/Bass) |
+| **Melon Multi Delay** | Multi-machine delay in the spirit of the Strymon TimeLine: 12 machines, sync, tap, Infinite and Trails |
