@@ -153,15 +153,28 @@ public:
 
         if (fresh)
         {
-            // start with tap 1 half-way through its life, so the first grain is already shifted
+            // start with tap 1 half-way through its life, so the first grain is already shifted;
+            // pitch up: tap 0 starts at the far end, so it has room to travel towards dMin
             fresh = false;
-            d[1]  = dMin + 0.5 * std::min (window, a * grain);
+            const double span = std::min (window, a * grain);
+            d[0]  = dMin + (slope < 0.0 ? span : 0.0);
+            d[1]  = dMin + 0.5 * span;
+        }
+
+        // A tap pinned at the end of the buffer it is moving towards stops moving, and a tap
+        // that stops moving plays the input at its ORIGINAL pitch (e.g. right after the pitch
+        // goes from 0 or below to an upward shift). Speed up the crossfade until it is respawned,
+        // so this lasts one short window instead of up to a whole grain (~330 ms at +2 st).
+        bool pinned = false;
+        for (auto& v : d)
+        {
+            const double next = v + slope;
+            pinned = pinned || (slope < 0.0 && next <= dMin) || (slope > 0.0 && next >= maxDelay);
+            v = std::clamp (next, dMin, maxDelay);
         }
 
         const double prev = phase;
-        phase += 1.0 / grain;
-        for (auto& v : d)
-            v = std::clamp (v + slope, dMin, maxDelay);
+        phase += 1.0 / (pinned ? std::min (grain, window) : grain);
 
         if (phase >= 1.0)
         {
