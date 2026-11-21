@@ -22,6 +22,9 @@ All plugins share the same identity (manufacturer **Melon**) and the same build 
 | **Melon Comp** | Keeley Compressor Plus-style guitar compressor (Sustain, Level, Blend, Tone, Single Coil/Humbucker release) | `plugins/Comp` |
 | **Melon Pro EQ** | Pro-Q-style 24-band parametric EQ (analyzer, dynamic EQ, Mid/Side, Linear Phase, slopes up to 96 dB/oct) | `plugins/ProEQ` |
 | **Melon Shifter** | Harmonizer-style dual-voice pitch shifter (±24 semitones, detune, delay with climbing feedback) | `plugins/Shifter` |
+| **Melon Tuner** | Guitar and bass tuner (chromatic + 14 tunings, needle or strobe, adjustable A4, mute) | `plugins/Tuner` |
+| **Melon Simple Gate** | Zuul+-style noise gate for guitar and bass (Threshold, Hold, Release, Guitar/Bass voicing) | `plugins/SimpleGate` |
+| **Melon Multi Delay** | TimeLine-style multi-machine delay (12 machines: tape, analog, dual, pattern, reverse, ice, swell, lo-fi… plus sync, tap, Infinite, Trails) | `plugins/MultiDelay` |
 
 All plugins share one version number, currently **1.2.0** (set once in `MELON_VERSION`, `cmake/MelonCommon.cmake`), shown as small text under each plugin's title.
 The full list of plugin codes and identifiers is in [`docs/PLUGIN_REGISTRY.md`](docs/PLUGIN_REGISTRY.md).
@@ -50,7 +53,10 @@ melon_plugins/
 │   ├── Rack/
 │   ├── Comp/
 │   ├── ProEQ/
-│   └── Shifter/
+│   ├── Shifter/
+│   ├── Tuner/
+│   ├── SimpleGate/
+│   └── MultiDelay/
 ├── shared/                   ← code shared by the newer plugins (DSP blocks, base classes, test helpers)
 ├── docs/
 │   ├── NEW_PLUGIN.md         ← step-by-step guide to creating a new plugin

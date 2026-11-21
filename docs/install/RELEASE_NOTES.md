@@ -1,42 +1,31 @@
-## What's new in 1.2.0
+# Melon Plugins 1.2.1
 
-### New plugin: Melon Shifter
-- A dual-voice pitch shifter: two voices shifting up to ±24 semitones each, with detune, delay and climbing feedback for cascading harmonies.
-- 10 factory presets and the same preset menu as the rest of the series.
+## What's new
 
-### Raspberry Pi / ARM Linux
-- New download: **`Melon-Plugins-…-Linux-arm64.zip`**, the LV2 versions of every plugin for 64-bit ARM Linux, such as a Raspberry Pi 4 or 5 with Raspberry Pi OS (64-bit). See its `INSTALL.txt` for setup and performance tips.
+Three new plugins join the series, bringing it to 16. Like the others, each one has the Melon look and the preset menu with 10 factory presets and room for up to 64 of your own. All three are also in the Raspberry Pi / ARM Linux download.
 
-### Other changes
-- Every plugin now shows **v1.2.0**.
+### New plugin: Melon Tuner
+A precise tuner for guitar and bass. Use it in **Chromatic** mode or pick one of **14 guitar and bass tunings** (Standard, Eb, D, Drop D, Drop C, DADGAD, Open G, Open D, 7-string, and 4/5/6-string bass). In a tuning it shows the nearest **string** with "Tune up" / "Tune down", even when a string is several semitones off, and ticks each string once it's in tune.
 
-**Your projects:** sessions and presets saved with 1.0.x or 1.1.0 open in 1.2.0 with the same settings.
+- **Needle** (±50 cents) or **Strobe** display.
+- Adjustable **A4 reference** (410–460 Hz), plus Threshold and Smoothing.
+- **Mute when engaged** works like a tuner pedal: map Bypass to a footswitch and tune silently.
+- Accurate to well under 1 cent, from the low B of a 5-string bass to the 24th fret of the high E, at about 1 % CPU (fine on a Pi).
 
-<details>
-<summary>What was new in 1.1.0</summary>
+### New plugin: Melon Simple Gate
+A no-fuss pedal-style noise gate with the controls of the Fortin Zuul+: **Threshold**, **Hold**, **Release** and a **Guitar / Bass** switch. It has zero latency, a fast attack that keeps your pick attack, and hysteresis so decaying notes don't chatter. A gate LED and an input meter show what it's doing. If you need the full mixing gate, Melon Gates of Doom is still there.
 
-### Presets in every plugin
-- A new preset row under each plugin's header: **Preset [<] [name] [>] [Save] [Save As]**. Click the name for the full menu (factory presets, your presets, Save, Save As, Delete, Reset to Default, Open Preset Folder).
-- **10 factory presets per plugin**, plus Default. They also appear in your DAW's own preset/program list.
-- **Up to 64 user presets per plugin**, saved as small `.melonpreset` files in `Documents/Melon Plugins/Presets/<Plugin name>/`. Updating the plugins never touches them, and the files work on Windows, macOS and Linux, so you can back them up, copy them to another computer or share them.
-- A `*` after the preset name means you changed something since loading or saving it. The current preset is remembered in your DAW project.
+### New plugin: Melon Multi Delay
+A stereo multi-machine delay in the spirit of the Strymon TimeLine, with **12 machines**: Digital, Tape, Analog, Dual, Pattern, Reverse, Ice, Duck, Swell, Trem, Filter and Lo-Fi. Each machine has two controls of its own on top of Time, Repeats, Mix, Filter, Grit and modulation.
 
-### Melon Rack + TONE3000
-- New TONE3000 row under the rack. Each factory preset suggests a pedal, amp and/or cabinet IR from the [TONE3000](https://www.tone3000.com) library.
-- **Sign in** with your free TONE3000 account: Melon Rack shows a short code and you confirm it on tone3000.com (your password never goes through the plugin).
-- **Click a suggestion** to download it and load it into its slot, or use **Load suggested tones** for the whole set. The **...** button lets you choose another capture of the same tone or view it on the website.
-- Downloads go to `Documents/Melon Plugins/TONE3000/` and only happen when you click. Use **Save As** afterwards: user presets remember the loaded models and IRs.
-- Files downloaded on the TONE3000 website don't load by themselves: drag them onto a slot, or click the slot to choose them.
-- The tones belong to their creators and are not included in the download. Thanks to everyone who shares their captures on TONE3000.
+- **Host sync** (straight, dotted and triplet) and **Tap tempo**.
+- **Infinite** holds the current repeats while you play over them.
+- **Trails** let the repeats ring out when you bypass it.
 
 ### Other changes
-- The version number now appears under each plugin's title (e.g. **v1.1.0**) and is reported to your DAW.
-- Plugin windows are slightly taller to fit the preset row (Melon Rack a bit more, for the TONE3000 row).
-- Linux: Melon Rack uses libcurl for its TONE3000 downloads. It is installed on almost every desktop distribution; if not, install `libcurl4` (Debian/Ubuntu) or `libcurl` (Fedora/Arch).
+- Every plugin now shows **v1.2.1** under its title.
 
-**Your projects:** sessions saved with 1.0.0 open in 1.1.0 with the same settings. The preset name shows as "Default *".
-
-</details>
+**Your projects:** sessions and presets saved with 1.0.x, 1.1.0 or 1.2.0 open in 1.2.1 with the same settings.
 
 ## Downloads
 
@@ -44,10 +33,10 @@ Pick the zip for your system under **Assets** below:
 
 | System | File | Formats |
 |---|---|---|
-| **Windows** (64-bit) | `Melon-Plugins-…-Windows.zip` | VST3, Standalone |
-| **macOS** (Apple Silicon + Intel) | `Melon-Plugins-…-macOS.zip` | VST3, AU, Standalone |
-| **Linux** (x86_64) | `Melon-Plugins-…-Linux.zip` | LV2, VST3, Standalone |
-| **Linux arm64** (Raspberry Pi 4/5, 64-bit OS) | `Melon-Plugins-…-Linux-arm64.zip` | LV2 |
+| **Windows** (64-bit) | `Melon-Plugins-v1.2.1-Windows.zip` | VST3, Standalone |
+| **macOS** (Apple Silicon + Intel) | `Melon-Plugins-v1.2.1-macOS.zip` | VST3, AU, Standalone |
+| **Linux** (x86_64) | `Melon-Plugins-v1.2.1-Linux.zip` | LV2, VST3, Standalone |
+| **Linux arm64** (Raspberry Pi 4/5, 64-bit OS) | `Melon-Plugins-v1.2.1-Linux-arm64.zip` | LV2 |
 
 Each zip has an `INSTALL.txt` with step-by-step instructions.
 
@@ -74,3 +63,6 @@ xattr -cr ~/Library/Audio/Plug-Ins/VST3/Melon*.vst3 ~/Library/Audio/Plug-Ins/Com
 | **Melon Comp** | Keeley Compressor Plus-style compressor with Blend, Tone and Single Coil / Humbucker release |
 | **Melon Pro EQ** | 24-band parametric EQ with analyzer, dynamic EQ, Mid/Side and Linear Phase |
 | **Melon Shifter** | Dual-voice pitch shifter (±24 semitones) with detune, delay and climbing feedback |
+| **Melon Tuner** 🆕 | Guitar and bass tuner: chromatic or 14 tunings, needle or strobe, adjustable A4, mute |
+| **Melon Simple Gate** 🆕 | Pedal-style noise gate for guitar and bass (Threshold, Hold, Release, Guitar/Bass) |
+| **Melon Multi Delay** 🆕 | TimeLine-style multi-machine delay: 12 machines, sync, tap, Infinite and Trails |
