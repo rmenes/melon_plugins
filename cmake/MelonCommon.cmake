@@ -27,6 +27,9 @@ set(MELON_LV2_URI_BASE      "https://github.com/melon-audio")
 # --- Build options -------------------------------------------------------------
 set(MELON_FORMATS VST3 LV2 Standalone CACHE STRING "Formats to build (VST3, LV2, Standalone, AU)")
 option(MELON_VST3_MANIFEST "Generate the VST3 moduleinfo.json (turn off when cross-compiling)" ON)
+# Melon Rack: TONE3000 sign-in and downloads (on Linux this needs libcurl / libssl-dev).
+# OFF for the pedal build: no curl, and Rack only opens the suggested tones in the browser.
+option(MELON_RACK_TONE3000 "Melon Rack: TONE3000 sign-in and downloads (needs libcurl on Linux)" ON)
 set(JUCE_DIR "" CACHE PATH "Local copy of JUCE (optional). Empty = download from GitHub")
 
 # --- JUCE (downloaded once for every plugin) -----------------------------------
