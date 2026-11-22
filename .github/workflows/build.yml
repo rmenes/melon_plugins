@@ -67,7 +67,7 @@ jobs:
           mkdir -p ~/Library/Audio/Plug-Ins/Components
           cp -R build/plugins/*/*_artefacts/Release/AU/*.component ~/Library/Audio/Plug-Ins/Components/
           killall -9 AudioComponentRegistrar || true
-          for code in Geq1 Chr1 Flg1 Gsy1 Drt1 Muf1 God1 Rvb1 D290 Rck1 Cmp1 Peq1 Shf1 Tun1 Sgt1 Mdl1 Nam1 Cab1; do
+          for code in Geq1 Chr1 Flg1 Gsy1 Drt1 Muf1 God1 Rvb1 D290 Rck1 Cmp1 Peq1 Shf1 Tun1 Sgt1 Mdl1 Nam1 Cab1 Mmd1; do
             echo "=== auval $code ==="
             auval -v aufx "$code" Meln | tail -n 3
           done

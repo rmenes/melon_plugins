@@ -32,6 +32,7 @@ Every plugin needs **unique, permanent** identifiers. DAWs use them to recognise
 | Melon Multi Delay | `MultiDelay` | `Mdl1` | `https://github.com/melon-audio/melon-multidelay` | 1.2.2 |
 | Melon NAM | `Nam` | `Nam1` | `https://github.com/melon-audio/melon-nam` | 1.2.2 |
 | Melon Cab | `Cab` | `Cab1` | `https://github.com/melon-audio/melon-cab` | 1.2.2 |
+| Melon MultiMod | `MultiMod` | `Mmd1` | `https://github.com/melon-audio/melon-multimod` | 1.2.2 |
 
 ## Rules
 

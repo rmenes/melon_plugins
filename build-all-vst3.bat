@@ -5,7 +5,7 @@ setlocal
 cd /d "%~dp0"
 set CMAKE="C:\Program Files\CMake\bin\cmake.exe"
 set LOG=build\build-all-vst3.log
-set PLUGINS=GraphicEQ Chorus Flanger GuitarSynth Dirt Muffs GatesOfDoom Reverberare Delay2290 Rack Comp ProEQ Shifter Tuner SimpleGate MultiDelay Nam Cab
+set PLUGINS=GraphicEQ Chorus Flanger GuitarSynth Dirt Muffs GatesOfDoom Reverberare Delay2290 Rack Comp ProEQ Shifter Tuner SimpleGate MultiDelay Nam Cab MultiMod
 
 if not exist build mkdir build
 echo === configure === > %LOG%
