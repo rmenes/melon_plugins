@@ -35,10 +35,16 @@ NamProcessor::NamProcessor() : ProcessorBase (createParameterLayout(), 0.1)
         else if (juce::File::isAbsolutePath (path) && juce::File (path).existsAsFile())
             loadModel (juce::File (path));
     };
+
+    // The pedal (no plugin window) picks a model from the library folder by number
+    library.onSelect = [this] (const juce::File& f) { startModelLoad (f); };
+    library.onNone   = [this] (const juce::String& message) { unloadModel (message, false); };
+    library.start();
 }
 
 NamProcessor::~NamProcessor()
 {
+    library.stop();
     cancelPendingUpdate();
     loader.removeAllJobs (true, 10000);
 }
@@ -56,6 +62,7 @@ melon::params::Layout NamProcessor::createParameterLayout()
     addFloat (l, "middle", "Middle", 0.0f, 10.0f, 5.0f, "", 1);
     addFloat (l, "treble", "Treble", 0.0f, 10.0f, 5.0f, "", 1);
     addBool (l, "normalize", "Normalize", true);
+    melon::LibrarySelector::addParameter (l, "model_index", "Library Model"); // -1 = none; see MelonLibrary.h
 
     addOutputAndBypass (l);
     return l;
@@ -187,13 +194,18 @@ void NamProcessor::processChunk (float* const* data, int numChannels, int offset
 //==============================================================================
 void NamProcessor::loadModel (const juce::File& file)
 {
+    lastModelFolder = file.getParentDirectory();
+    startModelLoad (file);
+}
+
+void NamProcessor::startModelLoad (const juce::File& file)
+{
     int gen;
     {
         const juce::ScopedLock sl (statusLock);
         gen    = ++generation;
         status = { file, "Loading...", true, false };
     }
-    lastModelFolder = file.getParentDirectory();
 
     loader.addJob ([this, file, gen] {
         juce::String info;
@@ -253,18 +265,26 @@ void NamProcessor::loadModel (const juce::File& file)
     });
 }
 
-void NamProcessor::clearModel()
+void NamProcessor::clearModel() { unloadModel ({}, true); }
+
+// message: empty, or why nothing is loaded (shown as an error, e.g. "No file #12 in ...")
+void NamProcessor::unloadModel (const juce::String& message, bool updateLatencyNow)
 {
     std::unique_ptr<mnam::LoadedModel> old;
     {
         const juce::ScopedLock sl (statusLock);
         ++generation;
         status = {};
+        if (message.isNotEmpty())
+            status = { juce::File(), message, false, true };
         const juce::SpinLock::ScopedLockType lock (modelLock);
         std::swap (model, old);
     }
     old.reset();
-    updateLatency();
+    if (updateLatencyNow)
+        updateLatency();
+    else
+        triggerAsyncUpdate(); // not on the message thread: update the latency from there
 }
 
 melon::LoadedFile NamProcessor::modelStatus() const
@@ -287,6 +307,7 @@ void NamProcessor::getStateInformation (juce::MemoryBlock& destData)
 void NamProcessor::setStateInformation (const void* data, int sizeInBytes)
 {
     ProcessorBase::setStateInformation (data, sizeInBytes);
+    library.syncToCurrent(); // the saved path below wins over the restored model_index
     const auto path = apvts.copyState().getProperty (kModelProp).toString();
     if (path.isNotEmpty() && juce::File::isAbsolutePath (path))
         loadModel (juce::File (path));

@@ -35,7 +35,14 @@ CabProcessor::CabProcessor() : ProcessorBase (createParameterLayout(), 0.5)
         else if (juce::File::isAbsolutePath (path) && juce::File (path).existsAsFile())
             loadIr (juce::File (path));
     };
+
+    // The pedal (no plugin window) picks an IR from the library folder by number
+    library.onSelect = [this] (const juce::File& f) { startIrLoad (f); };
+    library.onNone   = [this] (const juce::String& message) { unloadIr (message); };
+    library.start();
 }
+
+CabProcessor::~CabProcessor() { library.stop(); }
 
 melon::params::Layout CabProcessor::createParameterLayout()
 {
@@ -45,6 +52,7 @@ melon::params::Layout CabProcessor::createParameterLayout()
     addFloat (l, "lowcut", "Low Cut", (float) cab::kLowCutOff, 500.0f, (float) cab::kLowCutOff, "Hz", 0, 80.0f);
     addFloat (l, "highcut", "High Cut", 2000.0f, (float) cab::kHighCutOff, (float) cab::kHighCutOff, "Hz", 0, 7000.0f);
     addPercent (l, "mix", "Mix", 100.0f);
+    melon::LibrarySelector::addParameter (l, "ir_index", "Library IR"); // -1 = none; see MelonLibrary.h
 
     addOutputAndBypass (l);
     return l;
@@ -129,6 +137,12 @@ void CabProcessor::processDsp (float* const* data, int numChannels, int numSampl
 void CabProcessor::loadIr (const juce::File& file)
 {
     lastIrFolder = file.getParentDirectory();
+    startIrLoad (file);
+}
+
+void CabProcessor::startIrLoad (const juce::File& file)
+{
+    const juce::ScopedLock ll (loadLock);
     melon::LoadedFile st { file, {}, false, false };
 
     juce::AudioFormatManager fm;
@@ -168,11 +182,17 @@ void CabProcessor::loadIr (const juce::File& file)
     status = st;
 }
 
-void CabProcessor::clearIr()
+void CabProcessor::clearIr() { unloadIr ({}); }
+
+// message: empty, or why nothing is loaded (shown as an error, e.g. "No file #12 in ...")
+void CabProcessor::unloadIr (const juce::String& message)
 {
+    const juce::ScopedLock ll (loadLock);
     irActive = false;
     const juce::ScopedLock sl (statusLock);
     status = {};
+    if (message.isNotEmpty())
+        status = { juce::File(), message, false, true };
 }
 
 melon::LoadedFile CabProcessor::irStatus() const
@@ -195,6 +215,7 @@ void CabProcessor::getStateInformation (juce::MemoryBlock& destData)
 void CabProcessor::setStateInformation (const void* data, int sizeInBytes)
 {
     ProcessorBase::setStateInformation (data, sizeInBytes);
+    library.syncToCurrent(); // the saved path below wins over the restored ir_index
     const auto path = apvts.copyState().getProperty (kIrProp).toString();
     if (path.isNotEmpty() && juce::File::isAbsolutePath (path))
         loadIr (juce::File (path));

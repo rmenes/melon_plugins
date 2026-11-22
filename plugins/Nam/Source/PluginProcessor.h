@@ -2,6 +2,7 @@
 
 #include <MelonProcessorBase.h>
 #include <MelonFileLoader.h>
+#include <MelonLibrary.h>
 #include "NamDsp.h"
 #include "NeuralModelSlot.h"
 
@@ -25,6 +26,8 @@ public:
     // Message thread. The model loads on a background thread.
     void             loadModel (const juce::File& file);
     void             clearModel();
+    // Library folder used by the "model_index" parameter (the Melon Pedal sets it)
+    juce::File       libraryFolder() const { return library.root(); }
     melon::LoadedFile modelStatus() const;
 
     juce::File lastModelFolder; // where the file chooser opens when nothing is loaded
@@ -42,6 +45,10 @@ private:
     void processChunk (float* const* data, int numChannels, int offset, int n);
     void updateLatency();
     void handleAsyncUpdate() override { updateLatency(); }
+
+    // Any thread: the parts of loadModel / clearModel that don't touch lastModelFolder
+    void startModelLoad (const juce::File& file);
+    void unloadModel (const juce::String& message, bool updateLatencyNow);
 
     juce::SpinLock                     modelLock; // swap between the loader thread and the audio thread
     std::unique_ptr<mnam::LoadedModel> model;
@@ -63,7 +70,10 @@ private:
     std::atomic<int>    currentBlock { 512 };
     std::atomic<bool>   gateOpen { false };
 
-    juce::ThreadPool loader { 1 }; // declared last: destroyed first, waits for a running load
+    juce::ThreadPool loader { 1 }; // destroyed before the members above, waits for a running load
+
+    // model_index -> file in the library folder. Declared last: destroyed (stopped) first.
+    melon::LibrarySelector library { apvts, "model_index", "MELON_NAM_DIR", "NAM", { "nam", "aidax", "json" } };
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (NamProcessor)
 };

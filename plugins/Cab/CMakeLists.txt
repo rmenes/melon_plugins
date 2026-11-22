@@ -36,3 +36,7 @@ target_link_libraries(Cab PRIVATE juce::juce_dsp)
 # DSP test (independent of JUCE)
 add_executable(Cab_test_dsp tests/test_dsp.cpp)
 target_include_directories(Cab_test_dsp PRIVATE Source ${MELON_SHARED_DIR})
+
+# Library scan test (shared by Melon NAM and Melon Cab; independent of JUCE)
+add_executable(Melon_test_library_scan ${MELON_SHARED_DIR}/tests/test_library_scan.cpp)
+target_include_directories(Melon_test_library_scan PRIVATE ${MELON_SHARED_DIR})

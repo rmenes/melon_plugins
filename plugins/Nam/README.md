@@ -30,6 +30,22 @@ The panel under the preset row is the **NAM File Loader**. Click the model name 
 
 Models load on a background thread, so there are no audio dropouts when you switch. Models trained at another rate than the session (e.g. a 48 kHz model in a 44.1 kHz session) are resampled automatically; the plugin then reports a few samples of latency to the host.
 
+## Library index (Melon Pedal)
+
+Hosts without a plugin window, like the Melon Pedal (mod-host), choose the model with the
+**`model_index`** parameter instead of the file loader:
+
+| Value | Result |
+|---|---|
+| `-1` (default) | No model; unloads the current one. Desktop use is unchanged. |
+| `0`…`65535` | The file at that position in the library list. Past the end of the list = no model, with a message in the status line. |
+
+- **Library folder:** `$MELON_NAM_DIR` if set, otherwise `/data/media/NAM` on Linux, or `Documents/Melon Plugins/Library/NAM` on Windows and macOS.
+- **List:** every `.nam` / `.aidax` / `.json` file in that folder and all its sub-folders. Names starting with `.` are skipped, along with hidden folders. Sorted by relative path (`/` separators, UTF-8 byte order). The code is in `shared/MelonLibraryScan.h`; the pedal's `library.py` must produce the same order.
+- **Example:** `patch_set 0 https://github.com/melon-audio/melon-nam:model_index 12`
+- The saved file path in a project or user preset still wins over the index.
+- A host only sends changes. To reload the same number after files were added, send `-1` first.
+
 ## Controls
 
 | Control | Range | Default | What it does |
