@@ -1,0 +1,647 @@
+From db70cd0f4676a73617b6e7d0a7fc49bb0e319451 Mon Sep 17 00:00:00 2001
+From: Claude <noreply@anthropic.com>
+Date: Sat, 21 Nov 2026 23:09:46 -0300
+Subject: [PATCH] Nam, Cab: choose the model / IR by number from a library
+ folder (model_index, ir_index) for the Melon Pedal
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_01ECLxpAC4FVxhB2o1EABz3i
+---
+ plugins/Cab/CMakeLists.txt             |   4 +
+ plugins/Cab/README.md                  |  22 ++++
+ plugins/Cab/Source/PluginProcessor.cpp |  23 +++-
+ plugins/Cab/Source/PluginProcessor.h   |  12 ++
+ plugins/Nam/README.md                  |  16 +++
+ plugins/Nam/Source/PluginProcessor.cpp |  27 ++++-
+ plugins/Nam/Source/PluginProcessor.h   |  12 +-
+ shared/MelonLibrary.h                  | 146 +++++++++++++++++++++++++
+ shared/MelonLibraryScan.h              |  82 ++++++++++++++
+ shared/tests/test_library_scan.cpp     |  49 +++++++++
+ 10 files changed, 388 insertions(+), 5 deletions(-)
+ create mode 100644 shared/MelonLibrary.h
+ create mode 100644 shared/MelonLibraryScan.h
+ create mode 100644 shared/tests/test_library_scan.cpp
+
+diff --git a/plugins/Cab/CMakeLists.txt b/plugins/Cab/CMakeLists.txt
+index 84d9356..50434fd 100644
+--- a/plugins/Cab/CMakeLists.txt
++++ b/plugins/Cab/CMakeLists.txt
+@@ -36,3 +36,7 @@ target_link_libraries(Cab PRIVATE juce::juce_dsp)
+ # DSP test (independent of JUCE)
+ add_executable(Cab_test_dsp tests/test_dsp.cpp)
+ target_include_directories(Cab_test_dsp PRIVATE Source ${MELON_SHARED_DIR})
++
++# Library scan test (shared by Melon NAM and Melon Cab; independent of JUCE)
++add_executable(Melon_test_library_scan ${MELON_SHARED_DIR}/tests/test_library_scan.cpp)
++target_include_directories(Melon_test_library_scan PRIVATE ${MELON_SHARED_DIR})
+diff --git a/plugins/Cab/README.md b/plugins/Cab/README.md
+index bf1e5ca..512c25a 100644
+--- a/plugins/Cab/README.md
++++ b/plugins/Cab/README.md
+@@ -29,6 +29,22 @@ The panel under the preset row is the **IR File Loader**. Click the IR name to o
+ 
+ `<` and `>` step to the previous / next IR in the same folder. You can also drag a file onto the panel. The line under the name shows whether the IR is mono or stereo, its length and its sample rate.
+ 
++## Library index (Melon Pedal)
++
++Hosts without a plugin window, like the Melon Pedal (mod-host), choose the IR with the
++**`ir_index`** parameter instead of the file loader:
++
++| Value | Result |
++|---|---|
++| `-1` (default) | No IR; unloads the current one. Desktop use is unchanged. |
++| `0`…`65535` | The file at that position in the library list. Past the end of the list = no IR, with a message in the status line. |
++
++- **Library folder:** `$MELON_IR_DIR` if set, otherwise `/data/media/IR` on Linux, or `Documents/Melon Plugins/Library/IR` on Windows and macOS.
++- **List:** every `.wav` / `.aif` / `.aiff` / `.flac` file in that folder and all its sub-folders. Names starting with `.` are skipped, along with hidden folders. Sorted by relative path (`/` separators, UTF-8 byte order). The code is in `shared/MelonLibraryScan.h`; the pedal's `library.py` must produce the same order.
++- **Example:** `patch_set 0 https://github.com/melon-audio/melon-cab:ir_index 12`
++- The saved file path in a project or user preset still wins over the index.
++- A host only sends changes. To reload the same number after files were added, send `-1` first.
++
+ ## Controls
+ 
+ | Control | Range | Default | What it does |
+@@ -63,3 +79,9 @@ g++ -std=c++17 -O2 -ISource -I../../shared tests/test_dsp.cpp -o test_dsp && ./t
+ ```
+ 
+ Covers the Low Cut / High Cut filters (the convolution is JUCE's `juce::dsp::Convolution`).
++
++Library list order (shared by Melon NAM and Melon Cab):
++
++```bash
++cd ../../shared/tests && g++ -std=c++17 -O2 -I.. test_library_scan.cpp -o test_library_scan && ./test_library_scan
++```
+diff --git a/plugins/Cab/Source/PluginProcessor.cpp b/plugins/Cab/Source/PluginProcessor.cpp
+index 3b91e4e..9a29098 100644
+--- a/plugins/Cab/Source/PluginProcessor.cpp
++++ b/plugins/Cab/Source/PluginProcessor.cpp
+@@ -35,8 +35,15 @@ CabProcessor::CabProcessor() : ProcessorBase (createParameterLayout(), 0.5)
+         else if (juce::File::isAbsolutePath (path) && juce::File (path).existsAsFile())
+             loadIr (juce::File (path));
+     };
++
++    // The pedal (no plugin window) picks an IR from the library folder by number
++    library.onSelect = [this] (const juce::File& f) { startIrLoad (f); };
++    library.onNone   = [this] (const juce::String& message) { unloadIr (message); };
++    library.start();
+ }
+ 
++CabProcessor::~CabProcessor() { library.stop(); }
++
+ melon::params::Layout CabProcessor::createParameterLayout()
+ {
+     using namespace melon::params;
+@@ -45,6 +52,7 @@ melon::params::Layout CabProcessor::createParameterLayout()
+     addFloat (l, "lowcut", "Low Cut", (float) cab::kLowCutOff, 500.0f, (float) cab::kLowCutOff, "Hz", 0, 80.0f);
+     addFloat (l, "highcut", "High Cut", 2000.0f, (float) cab::kHighCutOff, (float) cab::kHighCutOff, "Hz", 0, 7000.0f);
+     addPercent (l, "mix", "Mix", 100.0f);
++    melon::LibrarySelector::addParameter (l, "ir_index", "Library IR"); // -1 = none; see MelonLibrary.h
+ 
+     addOutputAndBypass (l);
+     return l;
+@@ -129,6 +137,12 @@ void CabProcessor::processDsp (float* const* data, int numChannels, int numSampl
+ void CabProcessor::loadIr (const juce::File& file)
+ {
+     lastIrFolder = file.getParentDirectory();
++    startIrLoad (file);
++}
++
++void CabProcessor::startIrLoad (const juce::File& file)
++{
++    const juce::ScopedLock ll (loadLock);
+     melon::LoadedFile st { file, {}, false, false };
+ 
+     juce::AudioFormatManager fm;
+@@ -168,11 +182,17 @@ void CabProcessor::loadIr (const juce::File& file)
+     status = st;
+ }
+ 
+-void CabProcessor::clearIr()
++void CabProcessor::clearIr() { unloadIr ({}); }
++
++// message: empty, or why nothing is loaded (shown as an error, e.g. "No file #12 in ...")
++void CabProcessor::unloadIr (const juce::String& message)
+ {
++    const juce::ScopedLock ll (loadLock);
+     irActive = false;
+     const juce::ScopedLock sl (statusLock);
+     status = {};
++    if (message.isNotEmpty())
++        status = { juce::File(), message, false, true };
+ }
+ 
+ melon::LoadedFile CabProcessor::irStatus() const
+@@ -195,6 +215,7 @@ void CabProcessor::getStateInformation (juce::MemoryBlock& destData)
+ void CabProcessor::setStateInformation (const void* data, int sizeInBytes)
+ {
+     ProcessorBase::setStateInformation (data, sizeInBytes);
++    library.syncToCurrent(); // the saved path below wins over the restored ir_index
+     const auto path = apvts.copyState().getProperty (kIrProp).toString();
+     if (path.isNotEmpty() && juce::File::isAbsolutePath (path))
+         loadIr (juce::File (path));
+diff --git a/plugins/Cab/Source/PluginProcessor.h b/plugins/Cab/Source/PluginProcessor.h
+index bda2108..9b162bf 100644
+--- a/plugins/Cab/Source/PluginProcessor.h
++++ b/plugins/Cab/Source/PluginProcessor.h
+@@ -2,6 +2,7 @@
+ 
+ #include <MelonProcessorBase.h>
+ #include <MelonFileLoader.h>
++#include <MelonLibrary.h>
+ #include <juce_dsp/juce_dsp.h>
+ #include "CabDsp.h"
+ 
+@@ -15,6 +16,7 @@ class CabProcessor : public melon::ProcessorBase
+ {
+ public:
+     CabProcessor();
++    ~CabProcessor() override;
+ 
+     juce::AudioProcessorEditor* createEditor() override;
+     static melon::params::Layout createParameterLayout();
+@@ -26,6 +28,8 @@ public:
+     void              loadIr (const juce::File& file);
+     void              clearIr();
+     melon::LoadedFile irStatus() const;
++    // Library folder used by the "ir_index" parameter (the Melon Pedal sets it)
++    juce::File        libraryFolder() const { return library.root(); }
+ 
+     juce::File lastIrFolder; // where the file chooser opens when nothing is loaded
+ 
+@@ -37,6 +41,11 @@ protected:
+     void processDsp (float* const* data, int numChannels, int numSamples) override;
+ 
+ private:
++    // Any thread: loadIr / clearIr without touching lastIrFolder
++    void startIrLoad (const juce::File& file);
++    void unloadIr (const juce::String& message);
++
++    juce::CriticalSection  loadLock; // one IR load at a time (message thread and library thread)
+     juce::dsp::Convolution convolution;
+     std::atomic<bool>      irActive { false }, irStereo { false };
+ 
+@@ -49,5 +58,8 @@ private:
+     juce::AudioBuffer<float> dry;
+     int maxBlockSize = 512;
+ 
++    // ir_index -> file in the library folder. Declared last: destroyed (stopped) first.
++    melon::LibrarySelector library { apvts, "ir_index", "MELON_IR_DIR", "IR", { "wav", "aif", "aiff", "flac" } };
++
+     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (CabProcessor)
+ };
+diff --git a/plugins/Nam/README.md b/plugins/Nam/README.md
+index c3b7f28..8ecb434 100644
+--- a/plugins/Nam/README.md
++++ b/plugins/Nam/README.md
+@@ -30,6 +30,22 @@ The panel under the preset row is the **NAM File Loader**. Click the model name
+ 
+ Models load on a background thread, so there are no audio dropouts when you switch. Models trained at another rate than the session (e.g. a 48 kHz model in a 44.1 kHz session) are resampled automatically; the plugin then reports a few samples of latency to the host.
+ 
++## Library index (Melon Pedal)
++
++Hosts without a plugin window, like the Melon Pedal (mod-host), choose the model with the
++**`model_index`** parameter instead of the file loader:
++
++| Value | Result |
++|---|---|
++| `-1` (default) | No model; unloads the current one. Desktop use is unchanged. |
++| `0`…`65535` | The file at that position in the library list. Past the end of the list = no model, with a message in the status line. |
++
++- **Library folder:** `$MELON_NAM_DIR` if set, otherwise `/data/media/NAM` on Linux, or `Documents/Melon Plugins/Library/NAM` on Windows and macOS.
++- **List:** every `.nam` / `.aidax` / `.json` file in that folder and all its sub-folders. Names starting with `.` are skipped, along with hidden folders. Sorted by relative path (`/` separators, UTF-8 byte order). The code is in `shared/MelonLibraryScan.h`; the pedal's `library.py` must produce the same order.
++- **Example:** `patch_set 0 https://github.com/melon-audio/melon-nam:model_index 12`
++- The saved file path in a project or user preset still wins over the index.
++- A host only sends changes. To reload the same number after files were added, send `-1` first.
++
+ ## Controls
+ 
+ | Control | Range | Default | What it does |
+diff --git a/plugins/Nam/Source/PluginProcessor.cpp b/plugins/Nam/Source/PluginProcessor.cpp
+index 3007abf..b09abf1 100644
+--- a/plugins/Nam/Source/PluginProcessor.cpp
++++ b/plugins/Nam/Source/PluginProcessor.cpp
+@@ -35,10 +35,16 @@ NamProcessor::NamProcessor() : ProcessorBase (createParameterLayout(), 0.1)
+         else if (juce::File::isAbsolutePath (path) && juce::File (path).existsAsFile())
+             loadModel (juce::File (path));
+     };
++
++    // The pedal (no plugin window) picks a model from the library folder by number
++    library.onSelect = [this] (const juce::File& f) { startModelLoad (f); };
++    library.onNone   = [this] (const juce::String& message) { unloadModel (message, false); };
++    library.start();
+ }
+ 
+ NamProcessor::~NamProcessor()
+ {
++    library.stop();
+     cancelPendingUpdate();
+     loader.removeAllJobs (true, 10000);
+ }
+@@ -56,6 +62,7 @@ melon::params::Layout NamProcessor::createParameterLayout()
+     addFloat (l, "middle", "Middle", 0.0f, 10.0f, 5.0f, "", 1);
+     addFloat (l, "treble", "Treble", 0.0f, 10.0f, 5.0f, "", 1);
+     addBool (l, "normalize", "Normalize", true);
++    melon::LibrarySelector::addParameter (l, "model_index", "Library Model"); // -1 = none; see MelonLibrary.h
+ 
+     addOutputAndBypass (l);
+     return l;
+@@ -186,6 +193,12 @@ void NamProcessor::processChunk (float* const* data, int numChannels, int offset
+ 
+ //==============================================================================
+ void NamProcessor::loadModel (const juce::File& file)
++{
++    lastModelFolder = file.getParentDirectory();
++    startModelLoad (file);
++}
++
++void NamProcessor::startModelLoad (const juce::File& file)
+ {
+     int gen;
+     {
+@@ -193,7 +206,6 @@ void NamProcessor::loadModel (const juce::File& file)
+         gen    = ++generation;
+         status = { file, "Loading...", true, false };
+     }
+-    lastModelFolder = file.getParentDirectory();
+ 
+     loader.addJob ([this, file, gen] {
+         juce::String info;
+@@ -253,18 +265,26 @@ void NamProcessor::loadModel (const juce::File& file)
+     });
+ }
+ 
+-void NamProcessor::clearModel()
++void NamProcessor::clearModel() { unloadModel ({}, true); }
++
++// message: empty, or why nothing is loaded (shown as an error, e.g. "No file #12 in ...")
++void NamProcessor::unloadModel (const juce::String& message, bool updateLatencyNow)
+ {
+     std::unique_ptr<mnam::LoadedModel> old;
+     {
+         const juce::ScopedLock sl (statusLock);
+         ++generation;
+         status = {};
++        if (message.isNotEmpty())
++            status = { juce::File(), message, false, true };
+         const juce::SpinLock::ScopedLockType lock (modelLock);
+         std::swap (model, old);
+     }
+     old.reset();
+-    updateLatency();
++    if (updateLatencyNow)
++        updateLatency();
++    else
++        triggerAsyncUpdate(); // not on the message thread: update the latency from there
+ }
+ 
+ melon::LoadedFile NamProcessor::modelStatus() const
+@@ -287,6 +307,7 @@ void NamProcessor::getStateInformation (juce::MemoryBlock& destData)
+ void NamProcessor::setStateInformation (const void* data, int sizeInBytes)
+ {
+     ProcessorBase::setStateInformation (data, sizeInBytes);
++    library.syncToCurrent(); // the saved path below wins over the restored model_index
+     const auto path = apvts.copyState().getProperty (kModelProp).toString();
+     if (path.isNotEmpty() && juce::File::isAbsolutePath (path))
+         loadModel (juce::File (path));
+diff --git a/plugins/Nam/Source/PluginProcessor.h b/plugins/Nam/Source/PluginProcessor.h
+index 9a7d2a5..ffe0641 100644
+--- a/plugins/Nam/Source/PluginProcessor.h
++++ b/plugins/Nam/Source/PluginProcessor.h
+@@ -2,6 +2,7 @@
+ 
+ #include <MelonProcessorBase.h>
+ #include <MelonFileLoader.h>
++#include <MelonLibrary.h>
+ #include "NamDsp.h"
+ #include "NeuralModelSlot.h"
+ 
+@@ -25,6 +26,8 @@ public:
+     // Message thread. The model loads on a background thread.
+     void             loadModel (const juce::File& file);
+     void             clearModel();
++    // Library folder used by the "model_index" parameter (the Melon Pedal sets it)
++    juce::File       libraryFolder() const { return library.root(); }
+     melon::LoadedFile modelStatus() const;
+ 
+     juce::File lastModelFolder; // where the file chooser opens when nothing is loaded
+@@ -43,6 +46,10 @@ private:
+     void updateLatency();
+     void handleAsyncUpdate() override { updateLatency(); }
+ 
++    // Any thread: the parts of loadModel / clearModel that don't touch lastModelFolder
++    void startModelLoad (const juce::File& file);
++    void unloadModel (const juce::String& message, bool updateLatencyNow);
++
+     juce::SpinLock                     modelLock; // swap between the loader thread and the audio thread
+     std::unique_ptr<mnam::LoadedModel> model;
+     std::atomic<bool>                  modelResampling { false };
+@@ -63,7 +70,10 @@ private:
+     std::atomic<int>    currentBlock { 512 };
+     std::atomic<bool>   gateOpen { false };
+ 
+-    juce::ThreadPool loader { 1 }; // declared last: destroyed first, waits for a running load
++    juce::ThreadPool loader { 1 }; // destroyed before the members above, waits for a running load
++
++    // model_index -> file in the library folder. Declared last: destroyed (stopped) first.
++    melon::LibrarySelector library { apvts, "model_index", "MELON_NAM_DIR", "NAM", { "nam", "aidax", "json" } };
+ 
+     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (NamProcessor)
+ };
+diff --git a/shared/MelonLibrary.h b/shared/MelonLibrary.h
+new file mode 100644
+index 0000000..0f62b74
+--- /dev/null
++++ b/shared/MelonLibrary.h
+@@ -0,0 +1,146 @@
++// MelonLibrary.h - pick a file from a fixed library folder with a parameter (JUCE).
++//
++// Used by Melon NAM ("model_index") and Melon Cab ("ir_index") so a host without a plugin
++// window - the Melon Pedal running mod-host - can choose the model / IR by setting a number:
++//
++//     patch_set 0 https://github.com/melon-audio/melon-nam:model_index 12
++//
++//   -1        no file (unloads the current one). Default, so desktop users see no change.
++//   0..65535  the file at that position in the library list (MelonLibraryScan.h);
++//             past the end of the list = no file, with a message in the status line.
++//
++// Library folder: $MELON_NAM_DIR / $MELON_IR_DIR if set, else /data/media/NAM and
++// /data/media/IR on Linux (the pedal), else Documents/Melon Plugins/Library/NAM|IR.
++//
++// The parameter may be set from the audio thread (LV2 patch messages), so the listener only
++// stores the number and wakes a worker thread, which scans the folder and calls onSelect /
++// onNone. A host only sends a change, so to reload after the library changed, set -1 first.
++#pragma once
++
++#include <juce_audio_processors/juce_audio_processors.h>
++#include "MelonLibraryScan.h"
++
++namespace melon
++{
++class LibrarySelector : private juce::AudioProcessorValueTreeState::Listener, private juce::Thread
++{
++public:
++    static constexpr int kMaxIndex = 65535;
++
++    static void addParameter (juce::AudioProcessorValueTreeState::ParameterLayout& l, const juce::String& id, const juce::String& name)
++    {
++        l.add (std::make_unique<juce::AudioParameterInt> (
++            juce::ParameterID { id, 1 }, name, -1, kMaxIndex, -1,
++            juce::AudioParameterIntAttributes()
++                .withStringFromValueFunction ([] (int v, int) { return v < 0 ? juce::String ("None") : "#" + juce::String (v); })
++                .withValueFromStringFunction ([] (const juce::String& s) {
++                    return s.trim().equalsIgnoreCase ("none") ? -1 : s.retainCharacters ("-0123456789").getIntValue();
++                })));
++    }
++
++    // envVar: "MELON_NAM_DIR"; subFolder: "NAM"; exts: { "nam", "aidax", "json" }
++    LibrarySelector (juce::AudioProcessorValueTreeState& state, const juce::String& paramId, const juce::String& envVar,
++                     const juce::String& subFolder, std::vector<std::string> extensions)
++        : juce::Thread ("Melon library " + subFolder), apvts (state), id (paramId), env (envVar), sub (subFolder),
++          exts (std::move (extensions))
++    {
++        if (auto* p = apvts.getRawParameterValue (id))
++            requested = applied = juce::roundToInt (p->load());
++    }
++
++    ~LibrarySelector() override { stop(); }
++
++    // Called on the worker thread, with the selector's lock held
++    std::function<void (const juce::File&)>   onSelect;
++    std::function<void (const juce::String&)> onNone; // empty message = deliberate "None"
++
++    void start()
++    {
++        apvts.addParameterListener (id, this);
++        startThread (juce::Thread::Priority::low);
++    }
++
++    void stop()
++    {
++        apvts.removeParameterListener (id, this);
++        signalThreadShouldExit();
++        notify();
++        stopThread (4000);
++    }
++
++    // Call right after restoring a saved state: the saved file path wins over a stale index.
++    void syncToCurrent()
++    {
++        const juce::ScopedLock sl (lock);
++        applied = requested.load();
++    }
++
++    juce::File root() const
++    {
++        const auto fromEnv = juce::SystemStats::getEnvironmentVariable (env, {});
++        if (fromEnv.isNotEmpty() && juce::File::isAbsolutePath (fromEnv))
++            return juce::File (fromEnv);
++       #if JUCE_LINUX || JUCE_BSD
++        return juce::File ("/data/media").getChildFile (sub);
++       #else
++        return juce::File::getSpecialLocation (juce::File::userDocumentsDirectory)
++            .getChildFile ("Melon Plugins").getChildFile ("Library").getChildFile (sub);
++       #endif
++    }
++
++private:
++    void parameterChanged (const juce::String&, float v) override
++    {
++        requested = juce::roundToInt (v);
++        notify();
++    }
++
++    void run() override
++    {
++        while (! threadShouldExit())
++        {
++            wait (-1);
++            if (! threadShouldExit())
++                apply();
++        }
++    }
++
++    void apply()
++    {
++        const juce::ScopedLock sl (lock);
++        const int r = requested.load();
++        if (r == applied)
++            return;
++        applied = r;
++
++        if (r < 0)
++        {
++            if (onNone)
++                onNone ({});
++            return;
++        }
++
++        const auto dir   = root();
++        const auto files = library::scan (library::fromUtf8 (dir.getFullPathName().toStdString()), exts);
++        if ((size_t) r >= files.size())
++        {
++            if (onNone)
++                onNone ("No file #" + juce::String (r) + " in " + dir.getFullPathName() + " (" + juce::String ((int) files.size())
++                        + " files)");
++            return;
++        }
++        if (onSelect)
++            onSelect (dir.getChildFile (juce::String::fromUTF8 (files[(size_t) r].c_str())));
++    }
++
++    juce::AudioProcessorValueTreeState& apvts;
++    juce::String                        id, env, sub;
++    std::vector<std::string>            exts;
++    juce::CriticalSection               lock;
++    std::atomic<int>                    requested { -1 };
++    int                                 applied = -1; // guarded by lock
++
++    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (LibrarySelector)
++};
++
++} // namespace melon
+diff --git a/shared/MelonLibraryScan.h b/shared/MelonLibraryScan.h
+new file mode 100644
+index 0000000..e3637b5
+--- /dev/null
++++ b/shared/MelonLibraryScan.h
+@@ -0,0 +1,82 @@
++// MelonLibraryScan.h - the file list behind the "library index" parameters of Melon NAM
++// (model_index) and Melon Cab (ir_index). No JUCE: also built by the tests.
++//
++// The list is every file under `root` (all sub-folders) whose extension is in `exts`
++// (case-insensitive), skipping anything whose name, or any parent folder's name inside
++// root, starts with '.' (hidden files, "._" macOS files, ".importing-" temp files).
++// Entries are paths relative to root with '/' separators, sorted by their UTF-8 bytes.
++//
++// This order is a contract with the pedal controller (melon_pedal, library.py), which
++// turns a preset's relative path into the index:
++//     sorted(paths, key=lambda p: p.encode("utf-8"))
++// Change both together, or presets will pick the wrong file.
++#pragma once
++
++#include <algorithm>
++#include <cctype>
++#include <filesystem>
++#include <string>
++#include <system_error>
++#include <vector>
++
++namespace melon::library
++{
++inline std::string toUtf8 (const std::filesystem::path& p)
++{
++    const auto s = p.generic_u8string(); // std::string in C++17, std::u8string in C++20
++    return std::string (s.begin(), s.end());
++}
++
++// UTF-8 text -> path (on Windows a plain std::string would be read in the ANSI code page)
++inline std::filesystem::path fromUtf8 (const std::string& s)
++{
++   #if defined(__cpp_char8_t)
++    return std::filesystem::path (std::u8string (s.begin(), s.end()));
++   #else
++    return std::filesystem::u8path (s);
++   #endif
++}
++
++inline std::string lower (std::string s)
++{
++    for (auto& c : s)
++        c = (char) std::tolower ((unsigned char) c);
++    return s;
++}
++
++// exts without the dot, lower case: { "nam", "aidax", "json" }
++inline std::vector<std::string> scan (const std::filesystem::path& root, const std::vector<std::string>& exts)
++{
++    namespace fs = std::filesystem;
++    std::vector<std::string> out;
++    std::error_code ec;
++    if (! fs::is_directory (root, ec))
++        return out;
++
++    // Does not follow symlinked folders (no loops); symlinked files are listed.
++    fs::recursive_directory_iterator it (root, fs::directory_options::skip_permission_denied, ec), end;
++    for (; ! ec && it != end; it.increment (ec))
++    {
++        const auto& entry = *it;
++        const auto  name  = toUtf8 (entry.path().filename());
++        if (name.empty() || name[0] == '.')
++        {
++            if (entry.is_directory (ec))
++                it.disable_recursion_pending(); // skip hidden folders and everything inside
++            continue;
++        }
++        if (! entry.is_regular_file (ec))
++            continue;
++
++        const auto ext = lower (toUtf8 (entry.path().extension()));
++        if (ext.size() < 2 || std::find (exts.begin(), exts.end(), ext.substr (1)) == exts.end())
++            continue;
++
++        out.push_back (toUtf8 (entry.path().lexically_relative (root)));
++    }
++
++    std::sort (out.begin(), out.end()); // std::string compares bytes as unsigned char = UTF-8 byte order
++    return out;
++}
++
++} // namespace melon::library
+diff --git a/shared/tests/test_library_scan.cpp b/shared/tests/test_library_scan.cpp
+new file mode 100644
+index 0000000..2b405fd
+--- /dev/null
++++ b/shared/tests/test_library_scan.cpp
+@@ -0,0 +1,49 @@
++// Test for MelonLibraryScan.h (no JUCE):
++//   g++ -std=c++17 -O2 -I.. test_library_scan.cpp -o test_library_scan && ./test_library_scan [folder]
++// With a folder argument it prints the list (one relative path per line), so the pedal's
++// library.py can be checked against it: both must print the same lines in the same order.
++#include "MelonLibraryScan.h"
++#include <cstdio>
++#include <fstream>
++
++namespace fs = std::filesystem;
++static int failures = 0;
++static void check (bool ok, const char* what)
++{
++    std::printf ("  [%s] %s\n", ok ? " ok " : "FAIL", what);
++    failures += ok ? 0 : 1;
++}
++static void touch (const fs::path& p)
++{
++    fs::create_directories (p.parent_path());
++    std::ofstream (p) << "x";
++}
++
++int main (int argc, char** argv)
++{
++    const std::vector<std::string> ir { "wav", "aif", "aiff", "flac" };
++    if (argc > 1)
++    {
++        for (auto& f : melon::library::scan (argv[1], ir))
++            std::printf ("%s\n", f.c_str());
++        return 0;
++    }
++
++    std::printf ("Melon library scan test\n");
++    const auto root = fs::temp_directory_path() / "melon_library_test";
++    fs::remove_all (root);
++    for (const char* f : { "b.wav", "A.WAV", "a/z.wav", "a/b/c.flac", "Mesa 4x12/V30 SM57.wav", "Ólá/ação.wav", "readme.txt",
++                           ".hidden.wav", "._mac.wav", ".importing-x.wav", ".Trashes/t.wav", "a/.git/x.wav", "noext" })
++        touch (root / fs::u8path (f));
++
++    const auto list = melon::library::scan (root, ir);
++    const std::vector<std::string> expected { "A.WAV", "Mesa 4x12/V30 SM57.wav", "a/b/c.flac", "a/z.wav", "b.wav", "\xC3\x93l\xC3\xA1/a\xC3\xA7\xC3\xA3o.wav" };
++    for (auto& f : list)
++        std::printf ("    %s\n", f.c_str());
++    check (list == expected, "Recursive, extensions case-insensitive, hidden skipped, sorted by UTF-8 bytes");
++    check (melon::library::scan (root / "missing", ir).empty(), "Missing folder gives an empty list");
++
++    fs::remove_all (root);
++    std::printf (failures == 0 ? "All tests passed\n" : "%d test(s) FAILED\n", failures);
++    return failures == 0 ? 0 : 1;
++}
+-- 
+2.43.0
+
