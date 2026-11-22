@@ -31,15 +31,17 @@ The panel under the preset row is the **IR File Loader**. Click the IR name to o
 
 ## Library index (Melon Pedal)
 
+**LV2 only.** VST3, AU and Standalone don't have this parameter, so it never shows up in a DAW.
+
 Hosts without a plugin window, like the Melon Pedal (mod-host), choose the IR with the
 **`ir_index`** parameter instead of the file loader:
 
 | Value | Result |
 |---|---|
-| `-1` (default) | No IR; unloads the current one. Desktop use is unchanged. |
+| `-1` (default) | No IR; unloads the current one. |
 | `0`…`65535` | The file at that position in the library list. Past the end of the list = no IR, with a message in the status line. |
 
-- **Library folder:** `$MELON_IR_DIR` if set, otherwise `/data/media/IR` on Linux, or `Documents/Melon Plugins/Library/IR` on Windows and macOS.
+- **Library folder:** `$MELON_IR_DIR` if set, otherwise `/data/media/IR` on Linux, or `Documents/Melon Plugins/Library/IR` elsewhere.
 - **List:** every `.wav` / `.aif` / `.aiff` / `.flac` file in that folder and all its sub-folders. Names starting with `.` are skipped, along with hidden folders. Sorted by relative path (`/` separators, UTF-8 byte order). The code is in `shared/MelonLibraryScan.h`; the pedal's `library.py` must produce the same order.
 - **Example:** `patch_set 0 https://github.com/melon-audio/melon-cab:ir_index 12`
 - The saved file path in a project or user preset still wins over the index.

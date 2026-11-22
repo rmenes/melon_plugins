@@ -5,7 +5,11 @@
 //
 //     patch_set 0 https://github.com/melon-audio/melon-nam:model_index 12
 //
-//   -1        no file (unloads the current one). Default, so desktop users see no change.
+// LV2 builds only: VST3, AU and Standalone don't get the parameter, so DAW users never see it in
+// their automation lists. JUCE sets the format before the plugin is created, both when it runs and
+// when the build writes the LV2 .ttl files, so the parameter list always matches.
+//
+//   -1        no file (unloads the current one). Default.
 //   0..65535  the file at that position in the library list (MelonLibraryScan.h);
 //             past the end of the list = no file, with a message in the status line.
 //
@@ -27,8 +31,17 @@ class LibrarySelector : private juce::AudioProcessorValueTreeState::Listener, pr
 public:
     static constexpr int kMaxIndex = 65535;
 
+    // True when this instance is the LV2 version (the Melon Pedal runs LV2 in mod-host).
+    static bool enabled()
+    {
+        return juce::PluginHostType::getPluginLoadedAs() == juce::AudioProcessor::wrapperType_LV2;
+    }
+
+    // Adds the parameter in LV2 builds only (see enabled()).
     static void addParameter (juce::AudioProcessorValueTreeState::ParameterLayout& l, const juce::String& id, const juce::String& name)
     {
+        if (! enabled())
+            return;
         l.add (std::make_unique<juce::AudioParameterInt> (
             juce::ParameterID { id, 1 }, name, -1, kMaxIndex, -1,
             juce::AudioParameterIntAttributes()
@@ -56,12 +69,16 @@ public:
 
     void start()
     {
+        if (apvts.getParameter (id) == nullptr)
+            return;                       // not LV2: no parameter, no thread
         apvts.addParameterListener (id, this);
         startThread (juce::Thread::Priority::low);
     }
 
     void stop()
     {
+        if (apvts.getParameter (id) == nullptr)
+            return;
         apvts.removeParameterListener (id, this);
         signalThreadShouldExit();
         notify();
