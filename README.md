@@ -25,8 +25,10 @@ All plugins share the same identity (manufacturer **Melon**) and the same build 
 | **Melon Tuner** | Guitar and bass tuner (chromatic + 14 tunings, needle or strobe, adjustable A4, mute) | `plugins/Tuner` |
 | **Melon Simple Gate** | Zuul+-style noise gate for guitar and bass (Threshold, Hold, Release, Guitar/Bass voicing) | `plugins/SimpleGate` |
 | **Melon Multi Delay** | TimeLine-style multi-machine delay (12 machines: tape, analog, dual, pattern, reverse, ice, swell, lo-fi… plus sync, tap, Infinite, Trails) | `plugins/MultiDelay` |
+| **Melon NAM** | Simple Neural Amp Modeler (.nam) loader: Input, Noise Gate, Bass/Middle/Treble, Normalize, NAM File Loader menu | `plugins/Nam` |
+| **Melon Cab** | Simple cabinet IR loader: IR File Loader menu, Low Cut, High Cut, Mix (mono or stereo IRs, zero latency) | `plugins/Cab` |
 
-All plugins share one version number, currently **1.2.0** (set once in `MELON_VERSION`, `cmake/MelonCommon.cmake`), shown as small text under each plugin's title.
+All plugins share one version number, currently **1.2.1** (set once in `MELON_VERSION`, `cmake/MelonCommon.cmake`), shown as small text under each plugin's title.
 The full list of plugin codes and identifiers is in [`docs/PLUGIN_REGISTRY.md`](docs/PLUGIN_REGISTRY.md).
 
 ## Presets
@@ -56,7 +58,9 @@ melon_plugins/
 │   ├── Shifter/
 │   ├── Tuner/
 │   ├── SimpleGate/
-│   └── MultiDelay/
+│   ├── MultiDelay/
+│   ├── Nam/
+│   └── Cab/
 ├── shared/                   ← code shared by the newer plugins (DSP blocks, base classes, test helpers)
 ├── docs/
 │   ├── NEW_PLUGIN.md         ← step-by-step guide to creating a new plugin
@@ -164,8 +168,8 @@ To distribute them to other people without that step, they need to be signed and
 | `MELON_FORMATS` | `VST3;LV2;Standalone` | Formats to build. |
 | `MELON_VST3_MANIFEST` | `ON` | Generates the VST3 `moduleinfo.json`. Turn it off when cross-compiling. |
 | `JUCE_DIR` | empty | Uses a local copy of JUCE instead of downloading it. |
-| `NEURALAUDIO_DIR` | empty | Melon Rack only: uses a local clone of [NeuralAudio](https://github.com/mikeoliphant/NeuralAudio) (cloned with `--recurse-submodules`) instead of downloading it. |
-| `NEURALAUDIO_TAG` | `main` | Melon Rack only: NeuralAudio branch, tag or commit to download. |
+| `NEURALAUDIO_DIR` | empty | Melon Rack and Melon NAM: uses a local clone of [NeuralAudio](https://github.com/mikeoliphant/NeuralAudio) (cloned with `--recurse-submodules`) instead of downloading it. |
+| `NEURALAUDIO_TAG` | pinned commit | Melon Rack and Melon NAM: NeuralAudio branch, tag or commit to download. |
 | `MELON_TONE3000_CLIENT_ID` | the series' key | Melon Rack only: TONE3000 publishable API key used for sign-in and downloads. |
 
 Example: `cmake -B build -A x64 "-DMELON_FORMATS=VST3"`

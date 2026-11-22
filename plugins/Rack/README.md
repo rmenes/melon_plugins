@@ -63,6 +63,7 @@ The row under the rack connects Melon Rack to [TONE3000](https://www.tone3000.co
 
 1. Create an API key pair at https://www.tone3000.com/settings and copy the **publishable key** (the `client_id`). Never use the secret key in the plugin.
 2. Put it in `cmake/MelonCommon.cmake` (`MELON_TONE3000_CLIENT_ID`) or pass `-DMELON_TONE3000_CLIENT_ID=...` to CMake. Without a key, Melon Rack still shows the suggestions and opens them in the browser, but cannot sign in or download.
+   For builds without libcurl (e.g. the Melon pedal on Raspberry Pi OS), pass `-DMELON_RACK_TONE3000=OFF`: no sign-in or downloads, everything else works.
 3. Optional: download the official logo pack (https://www.tone3000.com/TONE3000%20Logos.zip) and save the full logo as `branding/tone3000/tone3000-logo.png`; the build then shows it instead of the text mark.
 4. Before a public release, check the integration against TONE3000's API terms and design requirements (https://www.tone3000.com/api/terms, https://www.tone3000.com/api). Independent developers can use the API for free when they follow the design requirements and cross-promote TONE3000 (logo and link on the website or release page).
 

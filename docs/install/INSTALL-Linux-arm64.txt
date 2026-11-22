@@ -40,6 +40,8 @@ and Ubuntu. On a minimal ("Lite") system, install them with:
 Performance tips
 ----------------
 - Use a buffer of 128 or 256 samples; 64 may crackle on a Raspberry Pi.
+- For a light amp + cabinet chain, use Melon NAM followed by Melon Cab
+  instead of Melon Rack (one model, one IR, no EQ or second slot).
 - Melon Rack (neural amp models) is the heaviest plugin. On a Raspberry Pi,
   prefer "Nano" or "Feather" NAM models, or AIDA-X models; "Standard" NAM
   models may be too heavy, especially on a Pi 4.
@@ -50,4 +52,5 @@ Plugins in this package
 -----------------------
 Melon GraphicEQ, Melon Chorus, Melon Flanger, Melon Guitar Synth, Melon Dirt,
 Melon Muffs, Melon Gates of Doom, Melon Reverberare, Melon Delay 2290, Melon Rack, Melon Comp,
-Melon Pro EQ, Melon Shifter, Melon Tuner, Melon Simple Gate, Melon Multi Delay
+Melon Pro EQ, Melon Shifter, Melon Tuner, Melon Simple Gate, Melon Multi Delay,
+Melon NAM, Melon Cab

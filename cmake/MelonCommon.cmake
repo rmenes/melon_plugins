@@ -9,7 +9,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 # --- Series identity (the same for every plugin) ------------------------------
 # Version of every plugin in the series (shown under each plugin's title and
 # reported to the host). Bump it here before a release, e.g. 1.2.0 -> 1.3.0.
-set(MELON_VERSION           "1.2.0")
+set(MELON_VERSION           "1.2.1")
 
 # TONE3000 publishable key (client_id) used by Melon Rack to sign in and download tones.
 # Create it at https://www.tone3000.com/settings (API keys). It is meant to be public
@@ -27,6 +27,9 @@ set(MELON_LV2_URI_BASE      "https://github.com/melon-audio")
 # --- Build options -------------------------------------------------------------
 set(MELON_FORMATS VST3 LV2 Standalone CACHE STRING "Formats to build (VST3, LV2, Standalone, AU)")
 option(MELON_VST3_MANIFEST "Generate the VST3 moduleinfo.json (turn off when cross-compiling)" ON)
+# Melon Rack: TONE3000 sign-in and downloads (on Linux this needs libcurl / libssl-dev).
+# OFF for the pedal build: no curl, and Rack only opens the suggested tones in the browser.
+option(MELON_RACK_TONE3000 "Melon Rack: TONE3000 sign-in and downloads (needs libcurl on Linux)" ON)
 set(JUCE_DIR "" CACHE PATH "Local copy of JUCE (optional). Empty = download from GitHub")
 
 # --- JUCE (downloaded once for every plugin) -----------------------------------

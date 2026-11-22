@@ -50,7 +50,7 @@ juce_add_plugin(Rack
     IS_MIDI_EFFECT            FALSE
     EDITOR_WANTS_KEYBOARD_FOCUS FALSE
     COPY_PLUGIN_AFTER_BUILD   FALSE
-    NEEDS_CURL                TRUE      # TONE3000 downloads (HTTPS) on Linux
+    NEEDS_CURL                ${MELON_RACK_TONE3000}      # TONE3000 downloads (HTTPS) on Linux
     VST3_CATEGORIES           Fx Distortion
     VST3_AUTO_MANIFEST        ${MELON_VST3_MANIFEST}
     LV2URI                    "${MELON_LV2_URI_BASE}/melon-rack")
@@ -64,7 +64,12 @@ target_sources(Rack PRIVATE
 
 target_include_directories(Rack PRIVATE Source ${MELON_NEURALAUDIO_SRC})
 
-melon_configure_plugin(Rack NETWORK)
+if(MELON_RACK_TONE3000)
+    melon_configure_plugin(Rack NETWORK)
+else()
+    melon_configure_plugin(Rack)
+    set(MELON_TONE3000_CLIENT_ID "") # no sign-in / downloads: suggestions open in the browser
+endif()
 
 # TONE3000 integration: the publishable key (cmake/MelonCommon.cmake) and, if present,
 # the official logo (branding/tone3000/tone3000-logo.png, from the TONE3000 logo pack).

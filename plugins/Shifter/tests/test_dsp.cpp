@@ -240,6 +240,41 @@ int main()
             check (ok, "Pitch sweeps and live switching stay clean and bounded");
         }
 
+        // Mix 100 % retuning ("virtual capo" / "drop tune"): no original pitch, not even right after
+        // the start or after the pitch jumps from 0 / a downward shift to an upward one (a tap pinned
+        // at the end of the buffer used to play the unshifted input for up to a whole grain)
+        {
+            const double f0 = 220.0;
+            for (const auto m : modes)
+            {
+                double worst = 0.0;
+                for (const auto [from, to] : { std::pair { 2, 2 }, { 0, 2 }, { -2, 2 }, { 0, -2 }, { 2, -2 }, { 5, 5 } })
+                {
+                    shifter::Engine e;
+                    e.prepare (fs, 1);
+                    shifter::Params p = wet;
+                    p.pitchA = from; p.mode = m;
+                    e.setParams (p);
+                    e.snapToTargets();
+                    auto out = testsig::sine (fs, f0, 0.5, 1.5);
+                    const size_t sw = (size_t) (0.5 * fs) / 128 * 128, settle = (size_t) (0.06 * fs), seg = (size_t) (0.05 * fs);
+                    for (size_t pos = 0; pos < out.size(); pos += 128)
+                    {
+                        if (pos == sw) { p.pitchA = to; e.setParams (p); }
+                        float* b[1] = { out.data() + pos };
+                        e.process (b, 1, (int) std::min<size_t> (128, out.size() - pos));
+                    }
+                    for (size_t a = settle; a + seg <= out.size(); a += seg / 2)
+                    {
+                        if ((from == 0 && a < sw + settle) || (a + seg > sw && a < sw + settle))
+                            continue;
+                        worst = std::max (worst, energyAt (out, fs, f0, a, a + seg));
+                    }
+                }
+                check (worst < 0.4, "Mix 100 %: no original pitch after start or pitch jumps (retuning)");
+            }
+        }
+
         // Silence in -> silence out
         {
             shifter::Params p = wet;
