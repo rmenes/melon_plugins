@@ -40,10 +40,13 @@ NamProcessor::NamProcessor() : ProcessorBase (createParameterLayout(), 0.1)
     library.onSelect = [this] (const juce::File& f) { startModelLoad (f); };
     library.onNone   = [this] (const juce::String& message) { unloadModel (message, false); };
     library.start();
+
+    apvts.addParameterListener ("size", this);
 }
 
 NamProcessor::~NamProcessor()
 {
+    apvts.removeParameterListener ("size", this);
     library.stop();
     cancelPendingUpdate();
     loader.removeAllJobs (true, 10000);
@@ -62,6 +65,8 @@ melon::params::Layout NamProcessor::createParameterLayout()
     addFloat (l, "middle", "Middle", 0.0f, 10.0f, 5.0f, "", 1);
     addFloat (l, "treble", "Treble", 0.0f, 10.0f, 5.0f, "", 1);
     addBool (l, "normalize", "Normalize", true);
+    // NAM A2 (slimmable) models only: Light runs the small network stored in the same file (much less CPU)
+    addChoice (l, "size", "Model Size", { "Full", "Light" }, 0);
     melon::LibrarySelector::addParameter (l, "model_index", "Library Model"); // -1 = none; see MelonLibrary.h
 
     addOutputAndBypass (l);
@@ -230,12 +235,15 @@ void NamProcessor::startModelLoad (const juce::File& file)
             }
             else
             {
+                m->setSize (modelSize()); // before prepare(): the warm-up runs the chosen size
                 preparedRate  = currentRate.load();
                 preparedBlock = currentBlock.load();
                 m->prepare (preparedRate, preparedBlock);
                 info = file.getFileExtension().substring (1).toUpperCase() + " model, trained at " + rateText (m->modelSampleRate());
                 if (std::abs (m->modelSampleRate() - preparedRate) > 1.0)
                     info << " (resampled, the session runs at " << rateText (preparedRate) << ")";
+                if (m->hasSizes())
+                    info << "  |  sizes: Full / Light";
                 if (m->normalizeDb() != 0.0f)
                     info << "  |  loudness data: " << (m->normalizeDb() > 0.0f ? "+" : "") << juce::String (m->normalizeDb(), 1) << " dB";
             }
@@ -252,6 +260,7 @@ void NamProcessor::startModelLoad (const juce::File& file)
             status = { file, info, false, failed };
             if (m != nullptr)
             {
+                m->setSize (modelSize()); // "size" may have changed while loading (no-op otherwise)
                 const juce::SpinLock::ScopedLockType lock (modelLock);
                 std::swap (model, m);
             }
@@ -266,6 +275,20 @@ void NamProcessor::startModelLoad (const juce::File& file)
 }
 
 void NamProcessor::clearModel() { unloadModel ({}, true); }
+
+void NamProcessor::parameterChanged (const juce::String&, float)
+{
+    triggerAsyncUpdate(); // -> applyModelSize() on the message thread
+}
+
+// Message thread. statusLock: the loader swaps and frees models under it, so `model` stays valid here.
+// The audio thread keeps running: the engine switches to the other size atomically.
+void NamProcessor::applyModelSize()
+{
+    const juce::ScopedLock sl (statusLock);
+    if (model != nullptr)
+        model->setSize (modelSize());
+}
 
 // message: empty, or why nothing is loaded (shown as an error, e.g. "No file #12 in ...")
 void NamProcessor::unloadModel (const juce::String& message, bool updateLatencyNow)

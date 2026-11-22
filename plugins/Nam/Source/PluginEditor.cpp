@@ -13,6 +13,9 @@ NamEditor::NamEditor (NamProcessor& p) : EditorBase (p, "NAM")
     eqOn   = &addToggle ("eq_on", "EQ", 70, "Bass / Middle / Treble on/off");
     addToggle ("normalize", "Normalize", 120,
                "Bring every model to the same loudness, using the loudness data stored in the .nam file");
+    addChoiceBox ("size", 90, false,
+                  "Model size, for NAM A2 (slimmable) models: Light runs the small network stored in the same file "
+                  "and needs much less CPU. Other models ignore it");
 
     knobsPerRow = 5;
     addKnob ("input", "Input", "Level into the model: turn it up to drive the amp harder, down for a cleaner sound");

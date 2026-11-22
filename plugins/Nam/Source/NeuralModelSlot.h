@@ -40,6 +40,15 @@ public:
     // Output level change (dB) that brings the model to a standard loudness (0 if the file has no loudness data)
     float normalizeDb() const { return normDb; }
 
+    // NAM A2 "slimmable" models (architecture SlimmableContainer) hold several sizes of the same capture,
+    // e.g. a light 3-channel WaveNet and a full 8-channel one. hasSizes() is false for other models.
+    bool hasSizes() const;
+
+    // 0.0 = smallest size, 1.0 = full size; ignored by models without sizes.
+    // NOT real-time safe (the engine resets the newly chosen size): never call it from the audio thread.
+    // Safe while process() runs on another thread: the engine switches sizes atomically.
+    void setSize (float size);
+
     // Largest block given to the model at once (NeuralAudio's default maximum buffer size)
     static constexpr int kModelChunk = 128;
 

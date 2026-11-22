@@ -60,6 +60,7 @@ Hosts without a plugin window, like the Melon Pedal (mod-host), choose the model
 | **Treble** | 0 – 10 | 5 (flat) | High shelf at 1.8 kHz, ±10 dB. |
 | **EQ** | on / off | on | Turns Bass / Middle / Treble on and off. |
 | **Normalize** | on / off | on | Uses the loudness data stored in the `.nam` file to bring every model to the same level. |
+| **Model Size** | Full / Light | Full | NAM A2 models (architecture `SlimmableContainer`) store a full and a light network of the same capture. **Light** runs the small one and needs much less CPU (useful on the Melon Pedal). Other models ignore it. The loader shows "sizes: Full / Light" when a model has them. |
 
 The header has the series' standard **Bypass** (latency-compensated crossfade) and **Output** gain.
 

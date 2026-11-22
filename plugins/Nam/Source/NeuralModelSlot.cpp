@@ -64,6 +64,17 @@ std::unique_ptr<LoadedModel> LoadedModel::load (const std::string& utf8Path, dou
     return m;
 }
 
+bool LoadedModel::hasSizes() const
+{
+    return model != nullptr && model->HasQualityScaling();
+}
+
+void LoadedModel::setSize (float size)
+{
+    if (hasSizes() && model->GetQualityScaleFactor() != size)
+        model->SetQualityScaleFactor (size);
+}
+
 void LoadedModel::prepare (double hostRate, int maxBlock)
 {
     resampler.prepare (hostRate, modelRate, maxBlock, kModelChunk);

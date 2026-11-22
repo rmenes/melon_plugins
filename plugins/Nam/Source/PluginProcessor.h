@@ -12,7 +12,9 @@
 //   Input -> Noise Gate -> NAM model -> Bass / Middle / Treble -> Output
 //
 // No cabinet: put Melon Cab (or any IR loader) after it.
-class NamProcessor : public melon::ProcessorBase, private juce::AsyncUpdater
+class NamProcessor : public melon::ProcessorBase,
+                     private juce::AsyncUpdater,
+                     private juce::AudioProcessorValueTreeState::Listener
 {
 public:
     NamProcessor();
@@ -44,7 +46,17 @@ protected:
 private:
     void processChunk (float* const* data, int numChannels, int offset, int n);
     void updateLatency();
-    void handleAsyncUpdate() override { updateLatency(); }
+    void handleAsyncUpdate() override
+    {
+        applyModelSize();
+        updateLatency();
+    }
+
+    // "size" parameter (Full / Light) -> engine size 1.0 / 0.0. Changes can arrive on the audio thread
+    // (host automation, mod-host patch_set), so they are applied later on the message thread.
+    void  parameterChanged (const juce::String& parameterID, float newValue) override;
+    float modelSize() const { return flag ("size") ? 0.0f : 1.0f; }
+    void  applyModelSize();
 
     // Any thread: the parts of loadModel / clearModel that don't touch lastModelFolder
     void startModelLoad (const juce::File& file);
