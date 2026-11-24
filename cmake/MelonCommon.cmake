@@ -9,7 +9,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 # --- Series identity (the same for every plugin) ------------------------------
 # Version of every plugin in the series (shown under each plugin's title and
 # reported to the host). Bump it here before a release, e.g. 1.2.0 -> 1.3.0.
-set(MELON_VERSION           "1.2.3")
+set(MELON_VERSION           "1.2.4")
 
 # TONE3000 publishable key (client_id) used by Melon Rack to sign in and download tones.
 # Create it at https://www.tone3000.com/settings (API keys). It is meant to be public

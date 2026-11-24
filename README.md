@@ -30,7 +30,7 @@ All plugins share the same identity (manufacturer **Melon**) and the same build 
 | **Melon MultiMod** | Mobius-style multi-machine modulation (12 machines: chorus, flanger, rotary, vibe, phaser, filter, formant, trems, autoswell, destroyer, quadrature… plus sync, tap and LFO wave) | `plugins/MultiMod` |
 | **Melon Trem** | Boss TR-2-style tremolo (Rate, Wave triangle-to-square, Depth, plus sync, tap and stereo pan) | `plugins/Trem` |
 
-All plugins share one version number, currently **1.2.3** (set once in `MELON_VERSION`, `cmake/MelonCommon.cmake`), shown as small text under each plugin's title.
+All plugins share one version number, currently **1.2.4** (set once in `MELON_VERSION`, `cmake/MelonCommon.cmake`), shown as small text under each plugin's title.
 The full list of plugin codes and identifiers is in [`docs/PLUGIN_REGISTRY.md`](docs/PLUGIN_REGISTRY.md).
 
 ## Presets
