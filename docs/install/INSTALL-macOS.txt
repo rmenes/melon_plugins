@@ -31,4 +31,4 @@ Plugins in this package
 Melon GraphicEQ, Melon Chorus, Melon Flanger, Melon Guitar Synth, Melon Dirt,
 Melon Muffs, Melon Gates of Doom, Melon Reverberare, Melon Delay 2290, Melon Rack, Melon Comp,
 Melon Pro EQ, Melon Shifter, Melon Tuner, Melon Simple Gate, Melon Multi Delay,
-Melon NAM, Melon Cab, Melon MultiMod
+Melon NAM, Melon Cab, Melon MultiMod, Melon Trem
