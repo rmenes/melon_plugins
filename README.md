@@ -29,6 +29,7 @@ All plugins share the same identity (manufacturer **Melon**) and the same build 
 | **Melon Cab** | Simple cabinet IR loader: IR File Loader menu, Low Cut, High Cut, Mix (mono or stereo IRs, zero latency) | `plugins/Cab` |
 | **Melon MultiMod** | Mobius-style multi-machine modulation (12 machines: chorus, flanger, rotary, vibe, phaser, filter, formant, trems, autoswell, destroyer, quadrature… plus sync, tap and LFO wave) | `plugins/MultiMod` |
 | **Melon Trem** | Boss TR-2-style tremolo (Rate, Wave triangle-to-square, Depth, plus sync, tap and stereo pan) | `plugins/Trem` |
+| **Melon Monolithic Synthesis** | SY-200-style monophonic guitar synth (pitch tracking, 12 modes × 6 sounds: lead, pad, string, bell, organ, bass, dual, sweep, noise, SFX, SEQ, arpeggio; 3 Params per mode, Direct mix, optional MIDI In) | `plugins/MonolithicSynthesis` |
 
 All plugins share one version number, currently **1.2.4** (set once in `MELON_VERSION`, `cmake/MelonCommon.cmake`), shown as small text under each plugin's title.
 The full list of plugin codes and identifiers is in [`docs/PLUGIN_REGISTRY.md`](docs/PLUGIN_REGISTRY.md).
@@ -64,7 +65,8 @@ melon_plugins/
 │   ├── Nam/
 │   ├── Cab/
 │   ├── MultiMod/
-│   └── Trem/
+│   ├── Trem/
+│   └── MonolithicSynthesis/
 ├── shared/                   ← code shared by the newer plugins (DSP blocks, base classes, test helpers)
 ├── docs/
 │   ├── NEW_PLUGIN.md         ← step-by-step guide to creating a new plugin

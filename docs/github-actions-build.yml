@@ -67,10 +67,13 @@ jobs:
           mkdir -p ~/Library/Audio/Plug-Ins/Components
           cp -R build/plugins/*/*_artefacts/Release/AU/*.component ~/Library/Audio/Plug-Ins/Components/
           killall -9 AudioComponentRegistrar || true
-          for code in Geq1 Chr1 Flg1 Gsy1 Drt1 Muf1 God1 Rvb1 D290 Rck1 Cmp1 Peq1 Shf1 Tun1 Sgt1 Mdl1 Nam1 Cab1 Mmd1; do
+          for code in Geq1 Chr1 Flg1 Gsy1 Drt1 Muf1 God1 Rvb1 D290 Rck1 Cmp1 Peq1 Shf1 Tun1 Sgt1 Mdl1 Nam1 Cab1 Mmd1 Trm1; do
             echo "=== auval $code ==="
             auval -v aufx "$code" Meln | tail -n 3
           done
+          # Monolithic Synthesis takes MIDI input, so it is a music effect (aumf), not aufx
+          echo "=== auval Mns1 ==="
+          auval -v aumf Mns1 Meln | tail -n 3
       - name: Package
         # ditto keeps the bundles' symlinks and permissions intact (a plain zip can break them)
         run: |

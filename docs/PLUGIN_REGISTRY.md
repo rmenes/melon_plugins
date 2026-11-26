@@ -34,6 +34,7 @@ Every plugin needs **unique, permanent** identifiers. DAWs use them to recognise
 | Melon Cab | `Cab` | `Cab1` | `https://github.com/melon-audio/melon-cab` | 1.2.4 |
 | Melon MultiMod | `MultiMod` | `Mmd1` | `https://github.com/melon-audio/melon-multimod` | 1.2.4 |
 | Melon Trem | `Trem` | `Trm1` | `https://github.com/melon-audio/melon-trem` | 1.2.4 |
+| Melon Monolithic Synthesis | `MonolithicSynthesis` | `Mns1` | `https://github.com/melon-audio/melon-monolithicsynthesis` | 1.2.4 |
 
 ## Rules
 
