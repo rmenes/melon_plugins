@@ -31,7 +31,7 @@ All plugins share the same identity (manufacturer **Melon**) and the same build 
 | **Melon Trem** | Boss TR-2-style tremolo (Rate, Wave triangle-to-square, Depth, plus sync, tap and stereo pan) | `plugins/Trem` |
 | **Melon Monolithic Synthesis** | SY-200-style monophonic guitar synth (pitch tracking, 12 modes × 6 sounds: lead, pad, string, bell, organ, bass, dual, sweep, noise, SFX, SEQ, arpeggio; 3 Params per mode, Direct mix, optional MIDI In) | `plugins/MonolithicSynthesis` |
 
-All plugins share one version number, currently **1.2.4** (set once in `MELON_VERSION`, `cmake/MelonCommon.cmake`), shown as small text under each plugin's title.
+All plugins share one version number, currently **1.2.5** (set once in `MELON_VERSION`, `cmake/MelonCommon.cmake`), shown as small text under each plugin's title.
 The full list of plugin codes and identifiers is in [`docs/PLUGIN_REGISTRY.md`](docs/PLUGIN_REGISTRY.md).
 
 ## Presets

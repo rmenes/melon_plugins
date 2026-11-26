@@ -1,21 +1,25 @@
-# Melon Plugins 1.2.4
+# Melon Plugins 1.2.5
 
 ## What's new
 
-### New plugin: Melon Trem
-A classic tremolo in the vein of the Boss TR-2, with the same three knobs: **Rate**, **Wave** and **Depth**. It goes from a smooth amp-style pulse to a hard on/off chop.
+### New plugin: Melon Monolithic Synthesis
+A monophonic guitar synthesizer in the vein of the Boss SY-200. Play your guitar normally: the plugin tracks each note you play and plays it on an analog-style synth. Bends, vibrato, slides, hammer-ons and pull-offs are all followed.
 
-- **Wave:** morphs from a smooth, slightly rounded triangle to a choppy square, like the pedal's Wave knob. The square's edges are softened just enough not to click.
-- **Depth:** from a gentle shimmer to a full cut at the bottom of each cycle. The peaks stay at your normal level, so there's no volume jump when you switch it on.
-- **Host sync and tap tempo:** Sync locks the tremolo to the host tempo, from 4 bars down to 1/32, including dotted and triplet values. While the host plays, it also follows the beat.
-- **Stereo:** **Mono** pulses both channels together, like the pedal; **Pan** runs the right channel in anti-phase for an auto-pan.
-- **Display:** a red Rate LED that pulses with the tremolo, like the pedal's, and the volume curve with a moving playhead.
-- **Presets:** 10 factory presets (Surf Shimmer, Helicopter, Eighth Chop, Stereo Swirl…) and the same preset menu as the rest of the series.
+- **12 modes, 72 sounds:** LEAD, PAD, STRING, BELL, ORGAN, BASS, DUAL, SWEEP, NOISE, SFX, SEQ and ARPEGGIO, with 6 sounds each (Saw Lead, Warm Pad, FM Bell, Acid Bass, Sync Sweep…).
+- **Param 1 / 2 / 3:** three knobs whose job changes with the mode (Filter, Resonance and Glide on LEAD; Attack, Release and Filter on PAD…). At 50 % you hear the sound exactly as designed.
+- **Mix:** blends your dry guitar with the synth (equal-power, like the other Melon plugins), plus an **Effect** level for the synth.
+- **Pitch tracking:** about 10 ms on high notes and up to about 30 ms on the low E string. An octave lock keeps a ringing note from jumping octaves when its fundamental fades.
+- **SEQ and ARPEGGIO:** rhythmic filter sequences and arpeggios on the note you hold, synced to the host tempo (1/4 down to 1/32, with triplets).
+- **Extras:** Sensitivity, Octave (±2), Pitch Snap, and **MIDI In** to play the synth from a MIDI pickup or keyboard instead of the guitar.
+- **Display:** the note you're playing with its tuning in cents, an input meter with the trigger level, the 12 modes with the current one lit, and the SEQ/ARP steps as they play.
+- **Presets:** 10 factory presets (Saw Lead, Pad Under Guitar, Crystal Bells, Acid Sequence, Octave Arpeggio…) and the same preset menu as the rest of the series.
+
+It plays one note at a time: play single notes and mute the other strings. For a polyphonic, filter-based guitar synth, use Melon Guitar Synth.
 
 ### Other changes
-- Every plugin now shows **v1.2.4** under its title.
+- Every plugin now shows **v1.2.5** under its title.
 
-**Your projects:** sessions and presets saved with 1.0.x, 1.1.0, 1.2.0, 1.2.1, 1.2.2 or 1.2.3 open in 1.2.4 with the same settings.
+**Your projects:** sessions and presets saved with 1.0.x, 1.1.0 or 1.2.0 – 1.2.4 open in 1.2.5 with the same settings.
 
 ## Downloads
 
@@ -23,10 +27,10 @@ Pick the zip for your system under **Assets** below:
 
 | System | File | Formats |
 |---|---|---|
-| **Windows** (64-bit) | `Melon-Plugins-v1.2.4-Windows.zip` | VST3, Standalone |
-| **macOS** (Apple Silicon + Intel) | `Melon-Plugins-v1.2.4-macOS.zip` | VST3, AU, Standalone |
-| **Linux** (x86_64) | `Melon-Plugins-v1.2.4-Linux.zip` | LV2, VST3, Standalone |
-| **Linux arm64** (Raspberry Pi 4/5, 64-bit OS) | `Melon-Plugins-v1.2.4-Linux-arm64.zip` | LV2 |
+| **Windows** (64-bit) | `Melon-Plugins-v1.2.5-Windows.zip` | VST3, Standalone |
+| **macOS** (Apple Silicon + Intel) | `Melon-Plugins-v1.2.5-macOS.zip` | VST3, AU, Standalone |
+| **Linux** (x86_64) | `Melon-Plugins-v1.2.5-Linux.zip` | LV2, VST3, Standalone |
+| **Linux arm64** (Raspberry Pi 4/5, 64-bit OS) | `Melon-Plugins-v1.2.5-Linux-arm64.zip` | LV2 |
 
 Each zip has an `INSTALL.txt` with step-by-step instructions.
 
@@ -59,4 +63,5 @@ xattr -cr ~/Library/Audio/Plug-Ins/VST3/Melon*.vst3 ~/Library/Audio/Plug-Ins/Com
 | **Melon NAM** | Light Neural Amp Modeler loader with gate, Bass/Middle/Treble, Normalize and Model Size |
 | **Melon Cab** | Cabinet IR loader (mono/stereo) with Low Cut, High Cut and Mix, zero latency |
 | **Melon MultiMod** | Mobius-style multi-machine modulation: 12 machines, sync, tap and LFO wave |
-| **Melon Trem** 🆕 | TR-2-style tremolo: Rate, Wave (triangle to square), Depth, sync, tap and stereo pan |
+| **Melon Trem** | TR-2-style tremolo: Rate, Wave (triangle to square), Depth, sync, tap and stereo pan |
+| **Melon Monolithic Synthesis** 🆕 | SY-200-style mono guitar synth: 12 modes × 6 sounds, 3 Params per mode, Mix, SEQ/ARP sync and MIDI In |
